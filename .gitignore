@@ -27,3 +27,8 @@ tmp/
 # Build artifacts
 dist/
 build/
+
+# Sensitive files
+/keys/
+*.pem
+*.key
