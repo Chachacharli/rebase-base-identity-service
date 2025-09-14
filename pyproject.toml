@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "rebase-base-identity-service"
+version = "0.1.0"
+description = "A base identity service using FastAPI"
+authors = ["Carlos Alberto torres Cano"]
+license = "MIT"
+readme = "README.md"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-select = ["I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
