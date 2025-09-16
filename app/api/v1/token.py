@@ -24,7 +24,6 @@ def token(
 ):
     if grant_type != "authorization_code":
         raise HTTPException(status_code=400, detail="Unsupported grant_type")
-
     # Validar authorization code
     data = validate_authorization_code(code)
     if not data:

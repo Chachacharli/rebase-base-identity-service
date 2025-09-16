@@ -8,7 +8,14 @@ from app.core.store import save_authorization_code
 router = APIRouter()
 
 # Simulación de clientes registrados
-CLIENTS = {"my-spa-client": {"redirect_uris": ["http://localhost:3000/callback"]}}
+CLIENTS = {
+    "my-spa-client": {
+        "redirect_uris": [
+            "http://localhost:3000/callback",
+            "https://oauth.pstmn.io/v1/callback",
+        ]
+    }
+}
 
 
 @router.get("/authorize")
