@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 
 from app.api import api_router
 from app.core.db import init_db
@@ -22,6 +23,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+templates = Jinja2Templates(directory="app/templates")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:8000", "https://rework-rate.scisa.com.mx"],
@@ -29,5 +32,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/login")
+def login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
 
 app.include_router(api_router)

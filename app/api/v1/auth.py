@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.core.db import get_session
 from app.core.store import save_authorization_code

@@ -1,8 +1,9 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
+
+# from pydantic import BaseModel
+# from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import Session
 
 from app.core.db import get_session
