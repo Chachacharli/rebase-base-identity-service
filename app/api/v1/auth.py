@@ -1,21 +1,14 @@
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
+from sqlmodel import Session, select
 
+from app.core.db import get_session
 from app.core.store import save_authorization_code
+from app.repositories.client_application_repository import ClientApplicationRepository
 
 router = APIRouter()
-
-# Simulación de clientes registrados
-CLIENTS = {
-    "my-spa-client": {
-        "redirect_uris": [
-            "http://localhost:3000/callback",
-            "https://oauth.pstmn.io/v1/callback",
-        ]
-    }
-}
 
 
 @router.get("/authorize")
@@ -27,14 +20,19 @@ def authorize(
     state: str,
     code_challenge: str,
     code_challenge_method: str = "S256",
+    session: Session = Depends(get_session),
 ):
     # Validar client_id
-    client = CLIENTS.get(client_id)
+    repository = ClientApplicationRepository(session)
+    client = repository.get_by_client_id(client_id)
+
+    print(client)
+
     if not client:
         raise HTTPException(status_code=400, detail="Invalid client_id")
 
     # Validar redirect_uri
-    if redirect_uri not in client["redirect_uris"]:
+    if redirect_uri not in client.redirect_uris:
         raise HTTPException(status_code=400, detail="Invalid redirect_uri")
 
     # Generar authorization code

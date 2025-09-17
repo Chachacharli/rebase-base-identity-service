@@ -56,4 +56,5 @@ def token(
         "token_type": "bearer",
         "expires_in": int(ACCESS_TOKEN_TTL.total_seconds()),
         "id_token": access_token,
+        "scope": data["scope"],
     }

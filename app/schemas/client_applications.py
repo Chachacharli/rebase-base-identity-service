@@ -1,10 +1,12 @@
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
 class ClientApplicationCreate(BaseModel):
     display_name: str = "Unnamed Application"
+    client_id: str
     client_secret: Optional[str] = None
     redirect_uris: Optional[List[str]] = []
     post_logout_redirect_uris: Optional[List[str]] = []
@@ -15,7 +17,7 @@ class ClientApplicationCreate(BaseModel):
 
 
 class ClientApplicationRead(BaseModel):
-    id: str
+    id: UUID
     display_name: str
     client_id: str
     redirect_uris: List[str]

@@ -9,13 +9,14 @@ CODE_TTL = timedelta(minutes=10)
 
 
 def save_authorization_code(
-    code: str, client_id: str, redirect_uri: str, code_challenge: str
+    code: str, client_id: str, redirect_uri: str, code_challenge: str, scope=["openid"]
 ):
     authorization_codes[code] = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
         "code_challenge": code_challenge,
         "expires_at": datetime.utcnow() + CODE_TTL,
+        "scope": scope,
     }
 
 
