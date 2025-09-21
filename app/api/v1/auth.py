@@ -85,4 +85,4 @@ def authorize_post(
 
     # Redirigir al cliente con code + state
     redirect_url = f"{redirect_uri}?code={auth_code}&state={state}"
-    return RedirectResponse(redirect_url)
+    return RedirectResponse(redirect_url, status_code=302)
