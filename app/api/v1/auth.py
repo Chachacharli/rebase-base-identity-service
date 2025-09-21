@@ -65,8 +65,8 @@ def authorize_post(
     code_challenge_method: str = Form(...),
     session: Session = Depends(get_session),
 ):
-    repo = UserRepository(session)
-    service = UserService(repo)
+    # repo = UserRepository(session)
+    service = UserService(session=session)
     user = service.authenticate_user(username, password)
 
     if not user:
@@ -86,7 +86,15 @@ def authorize_post(
 
     # Generar authorization code (asociado al user_id)
     auth_code = str(uuid4())
-    save_authorization_code(auth_code, client_id, redirect_uri, code_challenge, user.id)
+    print(user.id)
+    save_authorization_code(
+        client_id=client_id,
+        redirect_uri=redirect_uri,
+        code_challenge=code_challenge,
+        code=auth_code,
+        user_id=user.id,
+        scope=scope.split(" "),
+    )
 
     # Redirigir con code + state
     redirect_url = f"{redirect_uri}?code={auth_code}&state={state}"

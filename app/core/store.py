@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict
+from uuid import UUID
 
 # Almacena: code -> {client_id, redirect_uri, code_challenge, expires_at}
 authorization_codes: Dict[str, dict] = {}
@@ -9,10 +10,16 @@ CODE_TTL = timedelta(minutes=10)
 
 
 def save_authorization_code(
-    code: str, client_id: str, redirect_uri: str, code_challenge: str, scope=["openid"]
+    code: str,
+    client_id: str,
+    redirect_uri: str,
+    code_challenge: str,
+    user_id: UUID,
+    scope=["openid"],
 ):
     authorization_codes[code] = {
         "client_id": client_id,
+        "user_id": user_id,
         "redirect_uri": redirect_uri,
         "code_challenge": code_challenge,
         "expires_at": datetime.utcnow() + CODE_TTL,
