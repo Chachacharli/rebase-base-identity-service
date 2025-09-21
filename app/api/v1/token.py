@@ -11,12 +11,12 @@ router = APIRouter()
 
 
 class GrantType(str, Enum):
-    authorization_code = "authorization_code"
-    refresh_token = "refresh_token"
+    AUTHORIZATION_CODE = "authorization_code"
+    REFRESH_TOKEN = "refresh_token"
 
 
 grant_handlers = {
-    GrantType.authorization_code: AuthorizationCodeGrantHandler(settings),
+    GrantType.AUTHORIZATION_CODE: AuthorizationCodeGrantHandler(settings),
 }
 
 
