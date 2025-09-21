@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form
-from fastapi.responses import RedirectResponse
-from sqlmodel import Session
 from uuid import uuid4
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlmodel import Session
 
 from app.core.db import get_session
 from app.core.store import save_authorization_code
 from app.repositories.client_application_repository import ClientApplicationRepository
-from fastapi.templating import Jinja2Templates
+from app.repositories.user_repository import UserRepository
+from app.services.user_service import UserService
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -62,9 +65,11 @@ def authorize_post(
     code_challenge_method: str = Form(...),
     session: Session = Depends(get_session),
 ):
-    # Validación de usuario (aquí tu lógica real)
-    if username != "test" or password != "1234":
-        # Si hay error, se renderiza nuevamente el template con mensaje de error
+    repo = UserRepository(session)
+    service = UserService(repo)
+    user = service.authenticate_user(username, password)
+
+    if not user:
         return templates.TemplateResponse(
             "login.html",
             {
@@ -79,10 +84,10 @@ def authorize_post(
             },
         )
 
-    # Generar authorization code
+    # Generar authorization code (asociado al user_id)
     auth_code = str(uuid4())
-    save_authorization_code(auth_code, client_id, redirect_uri, code_challenge)
+    save_authorization_code(auth_code, client_id, redirect_uri, code_challenge, user.id)
 
-    # Redirigir al cliente con code + state
+    # Redirigir con code + state
     redirect_url = f"{redirect_uri}?code={auth_code}&state={state}"
     return RedirectResponse(redirect_url, status_code=302)

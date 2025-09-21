@@ -27,6 +27,7 @@ def token(
     redirect_uri: str = Form(...),
     client_id: str = Form(...),
     code_verifier: str = Form(...),
+    refresh_token: str = Form(None),
 ):
     form_data = {
         "grant_type": grant_type,
@@ -34,6 +35,7 @@ def token(
         "redirect_uri": redirect_uri,
         "client_id": client_id,
         "code_verifier": code_verifier,
+        "refresh_token": refresh_token,
     }
 
     handler = grant_handlers.get(grant_type)

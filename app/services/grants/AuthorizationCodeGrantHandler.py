@@ -38,7 +38,7 @@ class AuthorizationCodeGrantHandler:
             raise HTTPException(status_code=400, detail="Invalid PKCE code_verifier")
 
         access_payload = {
-            "sub": "user123",
+            "sub": data["user_id"],
             "iss": self.settings.BASE_URL,
             "aud": client_id,
             "exp": datetime.utcnow() + timedelta(seconds=30),
@@ -51,7 +51,7 @@ class AuthorizationCodeGrantHandler:
         )
 
         refresh_payload = {
-            "sub": "user123",
+            "sub": data["user_id"],
             "iss": self.settings.BASE_URL,
             "aud": client_id,
             "exp": datetime.utcnow() + timedelta(seconds=REFRESH_TOKEN_TTL),
