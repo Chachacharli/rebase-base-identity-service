@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
@@ -50,25 +51,28 @@ class AuthorizationCodeGrantHandler:
             algorithm="RS256",
         )
 
-        refresh_payload = {
-            "sub": str(data["user_id"]),
+        id_token_payload = {
             "iss": self.settings.BASE_URL,
+            "sub": str(data["user_id"]),
             "aud": client_id,
-            "exp": datetime.utcnow() + timedelta(seconds=REFRESH_TOKEN_TTL),
+            "exp": datetime.utcnow() + timedelta(minutes=30),
             "iat": datetime.utcnow(),
-            "typ": "refresh",
         }
-        refresh_token_jwt = jwt.encode(
-            refresh_payload,
+
+        id_token = jwt.encode(
+            id_token_payload,
             open(self.settings.PRIVATE_KEY_PATH).read(),
             algorithm="RS256",
         )
+
+        # Generar refresh token (simple, sin JWT)
+        refresh_token = secrets.token_urlsafe(32)
 
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "expires_in": int(ACCESS_TOKEN_TTL.total_seconds()),
-            "id_token": access_token,
-            "refresh_token": refresh_token_jwt,
+            "id_token": id_token,
+            "refresh_token": refresh_token,
             "scope": data["scope"],
         }

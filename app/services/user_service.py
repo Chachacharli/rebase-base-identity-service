@@ -22,3 +22,10 @@ class UserService:
         if user and pbkdf2_sha256.verify(password, user.password):
             return user
         return None
+
+    def reset_password(self, user: User, new_password: str) -> None:
+        hashed_pw = pbkdf2_sha256.hash(new_password)
+        user.password = hashed_pw
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
