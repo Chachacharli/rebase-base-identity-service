@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.db import get_session
 from app.models.refresh_token import RefreshToken
 from app.repositories.refresh_token_repository import RefreshTokenRepository
-from app.services.grants.AuthorizationCodeGrantHandler import (
+from app.services.grants.authorization_code_grant_handler import (
     AuthorizationCodeGrantHandler,
 )
 
