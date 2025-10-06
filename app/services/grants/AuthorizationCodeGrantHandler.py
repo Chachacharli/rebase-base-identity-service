@@ -38,18 +38,7 @@ class AuthorizationCodeGrantHandler:
         if calc_challenge != data["code_challenge"]:
             raise HTTPException(status_code=400, detail="Invalid PKCE code_verifier")
 
-        access_payload = {
-            "sub": str(data["user_id"]),
-            "iss": self.settings.BASE_URL,
-            "aud": client_id,
-            "exp": datetime.utcnow() + timedelta(seconds=30),
-            "iat": datetime.utcnow(),
-        }
-        access_token = jwt.encode(
-            access_payload,
-            open(self.settings.PRIVATE_KEY_PATH).read(),
-            algorithm="RS256",
-        )
+        access_token = secrets.token_urlsafe(32)
 
         id_token_payload = {
             "iss": self.settings.BASE_URL,
@@ -70,6 +59,8 @@ class AuthorizationCodeGrantHandler:
 
         return {
             "access_token": access_token,
+            "user_id": data["user_id"],
+            "client_id": client_id,
             "token_type": "bearer",
             "expires_in": int(ACCESS_TOKEN_TTL.total_seconds()),
             "id_token": id_token,

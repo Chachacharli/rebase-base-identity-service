@@ -27,9 +27,7 @@ async def lifespan(app: FastAPI):
     print("Closing app...")
 
 
-app = FastAPI(
-    lifespan=lifespan, title=__name__, version=__version__, description=__description__
-)
+app = FastAPI(title=__name__, version=__version__, description=__description__)
 
 templates = Jinja2Templates(directory="app/templates")
 

@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
+from typing import List
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import JSON, Column, Field, SQLModel
 
 from app.models.base import PKMixin
 
@@ -9,8 +10,8 @@ from app.models.base import PKMixin
 class RefreshToken(SQLModel, PKMixin, table=True):
     __tablename__ = "refresh_tokens"
     token: str
-    user_id: uuid.UUID = Field(foreign_key="user.id")
-    client_id: str
-    scope: str
+    user_id: uuid.UUID = Field(foreign_key="users.id")
+    client_id: str = Field(foreign_key="client_applications.client_id")
+    scope: List[str] = Field(sa_column=Column(JSON))
     expires_at: datetime
     revoked: bool = False

@@ -25,6 +25,7 @@ def introspect(token: str = Form(...), session: Session = Depends(get_session)):
         # Revisar si es refresh token en DB
         repo = RefreshTokenRepository(session)
         db_token = repo.get(token)
+
         if (
             db_token
             and not db_token.revoked

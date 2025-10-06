@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException
 
 from app.core.config import settings
+from app.core.db import get_session
+from app.models.refresh_token import RefreshToken
+from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.services.grants.AuthorizationCodeGrantHandler import (
     AuthorizationCodeGrantHandler,
 )
@@ -25,9 +29,10 @@ def token(
     grant_type: str = Form(...),
     code: str = Form(...),
     redirect_uri: str = Form(...),
-    client_id: str = Form(...),
+    client_id: str = Form(None),
     code_verifier: str = Form(...),
     refresh_token: str = Form(None),
+    session=Depends(get_session),
 ):
     form_data = {
         "grant_type": grant_type,
@@ -42,4 +47,20 @@ def token(
     if not handler:
         raise HTTPException(status_code=400, detail="Unsupported grant_type")
 
-    return handler.handle(form_data)
+    tokens = handler.handle(form_data)
+
+    # Guardamos el refresh token en la base de datos
+    if "refresh_token" in tokens and tokens["refresh_token"]:
+        refresh_token_obj = RefreshToken(
+            token=tokens["refresh_token"],
+            user_id=tokens["user_id"],
+            client_id=client_id,
+            scope=tokens["scope"],
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(seconds=tokens["expires_in"]),
+            revoked=False,
+        )
+        repo = RefreshTokenRepository(session)
+        repo.save(refresh_token_obj)
+
+    return tokens

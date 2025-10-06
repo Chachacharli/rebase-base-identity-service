@@ -86,7 +86,6 @@ def authorize_post(
 
     # Generar authorization code (asociado al user_id)
     auth_code = str(uuid4())
-    print(user.id)
     save_authorization_code(
         client_id=client_id,
         redirect_uri=redirect_uri,
