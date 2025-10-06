@@ -1,17 +1,27 @@
-import base64
-import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 
-from fastapi import APIRouter, Form, HTTPException
-from jose import jwt
+from fastapi import APIRouter, Depends, Form, HTTPException
 
 from app.core.config import settings
-from app.core.store import validate_authorization_code
-
-# Tiempo de vida de access_token
-ACCESS_TOKEN_TTL = timedelta(minutes=30)
+from app.core.db import get_session
+from app.models.refresh_token import RefreshToken
+from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.services.grants.AuthorizationCodeGrantHandler import (
+    AuthorizationCodeGrantHandler,
+)
 
 router = APIRouter()
+
+
+class GrantType(str, Enum):
+    AUTHORIZATION_CODE = "authorization_code"
+    REFRESH_TOKEN = "refresh_token"
+
+
+grant_handlers = {
+    GrantType.AUTHORIZATION_CODE: AuthorizationCodeGrantHandler(settings),
+}
 
 
 @router.post("/token")
@@ -19,42 +29,38 @@ def token(
     grant_type: str = Form(...),
     code: str = Form(...),
     redirect_uri: str = Form(...),
-    client_id: str = Form(...),
+    client_id: str = Form(None),
     code_verifier: str = Form(...),
+    refresh_token: str = Form(None),
+    session=Depends(get_session),
 ):
-    if grant_type != "authorization_code":
+    form_data = {
+        "grant_type": grant_type,
+        "code": code,
+        "redirect_uri": redirect_uri,
+        "client_id": client_id,
+        "code_verifier": code_verifier,
+        "refresh_token": refresh_token,
+    }
+
+    handler = grant_handlers.get(grant_type)
+    if not handler:
         raise HTTPException(status_code=400, detail="Unsupported grant_type")
-    # Validar authorization code
-    data = validate_authorization_code(code)
-    if not data:
-        raise HTTPException(status_code=400, detail="Invalid or expired code")
 
-    # Validar redirect_uri y client_id
-    if data["redirect_uri"] != redirect_uri or data["client_id"] != client_id:
-        raise HTTPException(status_code=400, detail="Invalid client or redirect_uri")
+    tokens = handler.handle(form_data)
 
-    hashed = hashlib.sha256(code_verifier.encode()).digest()
-    calc_challenge = base64.urlsafe_b64encode(hashed).rstrip(b"=").decode()
-    if calc_challenge != data["code_challenge"]:
-        raise HTTPException(status_code=400, detail="Invalid PKCE code_verifier")
+    # Guardamos el refresh token en la base de datos
+    if "refresh_token" in tokens and tokens["refresh_token"]:
+        refresh_token_obj = RefreshToken(
+            token=tokens["refresh_token"],
+            user_id=tokens["user_id"],
+            client_id=client_id,
+            scope=tokens["scope"],
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(seconds=tokens["expires_in"]),
+            revoked=False,
+        )
+        repo = RefreshTokenRepository(session)
+        repo.save(refresh_token_obj)
 
-    # Generar access_token / id_token
-    payload = {
-        "sub": "user123",
-        "iss": settings.BASE_URL,
-        "aud": client_id,
-        "exp": datetime.utcnow() + ACCESS_TOKEN_TTL,
-        "iat": datetime.utcnow(),
-    }
-
-    access_token = jwt.encode(
-        payload, open(settings.PRIVATE_KEY_PATH).read(), algorithm="RS256"
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "expires_in": int(ACCESS_TOKEN_TTL.total_seconds()),
-        "id_token": access_token,
-        "scope": data["scope"],
-    }
+    return tokens

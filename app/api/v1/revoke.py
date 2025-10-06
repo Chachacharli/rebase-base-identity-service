@@ -1,0 +1,24 @@
+from fastapi import APIRouter, Depends, Form
+from sqlmodel import Session
+
+from app.core.db import get_session
+from app.repositories.refresh_token_repository import RefreshTokenRepository
+
+router = APIRouter()
+
+# Aquí deberías tener un "store" que permita invalidar tokens (lista negra o estado en BD)
+revoked_tokens = set()
+
+
+@router.post("/revoke")
+def revoke(
+    token: str = Form(...),
+    token_type_hint: str = Form(None),
+    session: Session = Depends(get_session),
+):
+    repo = RefreshTokenRepository(session)
+    db_token = repo.get(token)
+    if db_token:
+        repo.revoke(token)
+    # Para access_token JWT → opcional: meter en blacklist Redis
+    return {"revoked": True}
