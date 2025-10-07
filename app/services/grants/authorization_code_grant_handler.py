@@ -9,20 +9,24 @@ from jose import jwt
 
 from app.core.config import Settings
 from app.core.store import validate_authorization_code
+from app.domain.tokens.authorization_code_grant_request import (
+    AuthorizationCodeGrantRequest,
+)
+from app.services.grants.token_grant_handler import TokenGrantHandler
 
 REFRESH_TOKEN_TTL = 60 * 60 * 24 * 1
 ACCESS_TOKEN_TTL = timedelta(minutes=30)
 
 
-class AuthorizationCodeGrantHandler:
+class AuthorizationCodeGrantHandler(TokenGrantHandler):
     def __init__(self, settings: Settings):
         self.settings = settings
 
-    def handle(self, form_data: Dict[str, Any]) -> Dict[str, Any]:
-        code = form_data["code"]
-        redirect_uri = form_data["redirect_uri"]
-        client_id = form_data["client_id"]
-        code_verifier = form_data["code_verifier"]
+    def handle(self, form_data: AuthorizationCodeGrantRequest) -> Dict[str, Any]:
+        code = form_data.code
+        redirect_uri = form_data.redirect_uri
+        client_id = form_data.client_id
+        code_verifier = form_data.code_verifier
 
         data = validate_authorization_code(code)
         if not data:
