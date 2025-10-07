@@ -54,14 +54,14 @@ def token(
     tokens = handler.handle(request)
 
     # Guardamos el refresh token en la base de datos
-    if "refresh_token" in tokens and tokens["refresh_token"]:
+    if tokens.refresh_token:
         refresh_token_obj = RefreshToken(
-            token=tokens["refresh_token"],
-            user_id=tokens["user_id"],
+            token=tokens.refresh_token,
+            user_id=tokens.user_id,
             client_id=client_id,
-            scope=tokens["scope"],
+            scope=tokens.scope,
             expires_at=datetime.now(timezone.utc)
-            + timedelta(seconds=tokens["expires_in"]),
+            + timedelta(seconds=tokens.expires_in),
             revoked=False,
         )
         repo = RefreshTokenRepository(session)

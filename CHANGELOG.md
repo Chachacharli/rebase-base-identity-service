@@ -1,5 +1,20 @@
 # rebase-base-identity-service
 
+## 0.2.2 - [date]
+
+### Summary
+Refactor the AuthorizationCodeGrantHandler to accept a strongly typed request object instead of a generic dictionary. This enhances type safety and code clarity.
+
+### Improvements
+//
+
+### Corrections
+//
+
+### Decrements
+//
+
+
 ## 0.2.1 - 05/10/2025
 
 ### Summary
