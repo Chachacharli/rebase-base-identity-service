@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from jose import jwt
 
 from app.core.config import Settings
-from app.core.store import validate_authorization_code
+from app.core.store import authorization_code_store
 from app.domain.tokens.authorization_code_grant_request import (
     AuthorizationCodeGrantRequest,
 )
@@ -29,25 +29,25 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
         client_id = form_data.client_id
         code_verifier = form_data.code_verifier
 
-        data = validate_authorization_code(code)
+        data = authorization_code_store.validate(code)
         if not data:
             raise HTTPException(status_code=400, detail="Invalid or expired code")
 
-        if data["redirect_uri"] != redirect_uri or data["client_id"] != client_id:
+        if data.redirect_uri != redirect_uri or data.client_id != client_id:
             raise HTTPException(
                 status_code=400, detail="Invalid client or redirect_uri"
             )
 
         hashed = hashlib.sha256(code_verifier.encode()).digest()
         calc_challenge = base64.urlsafe_b64encode(hashed).rstrip(b"=").decode()
-        if calc_challenge != data["code_challenge"]:
+        if calc_challenge != data.code_challenge:
             raise HTTPException(status_code=400, detail="Invalid PKCE code_verifier")
 
         access_token = secrets.token_urlsafe(32)
 
         id_token_payload = IDTokenPayload(
             iss=self.settings.BASE_URL,
-            sub=str(data["user_id"]),
+            sub=str(data.user_id),
             aud=client_id,
             exp=datetime.utcnow() + timedelta(minutes=30),
             iat=datetime.utcnow(),
@@ -64,13 +64,13 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
 
         response = GrantTokenResponse(
             access_token=access_token,
-            user_id=data["user_id"],
+            user_id=data.user_id,
             client_id=client_id,
             token_type="bearer",
             expires_in=int(ACCESS_TOKEN_TTL.total_seconds()),
             id_token=id_token,
             refresh_token=refresh_token,
-            scope=data["scope"],
+            scope=data.scope,
         )
 
         return response

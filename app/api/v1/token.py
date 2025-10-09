@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 
 from fastapi import APIRouter, Depends, Form, HTTPException
 
 from app.core.config import settings
 from app.core.db import get_session
+from app.domain.grants.grant_types import GrantType
 from app.domain.tokens.authorization_code_grant_request import (
     AuthorizationCodeGrantRequest,
 )
@@ -15,11 +15,6 @@ from app.services.grants.authorization_code_grant_handler import (
 )
 
 router = APIRouter()
-
-
-class GrantType(str, Enum):
-    AUTHORIZATION_CODE = "authorization_code"
-    REFRESH_TOKEN = "refresh_token"
 
 
 grant_handlers = {
