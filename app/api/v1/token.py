@@ -60,6 +60,6 @@ def token(
             revoked=False,
         )
         repo = RefreshTokenRepository(session)
-        repo.save(refresh_token_obj)
+        repo.create(refresh_token_obj)
 
     return tokens
