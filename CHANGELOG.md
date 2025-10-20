@@ -1,12 +1,14 @@
 # rebase-base-identity-service
 
-## 0.2.2 - [date]
+## 0.2.2 - 20/10/2025
 
 ### Summary
 Refactor the AuthorizationCodeGrantHandler to accept a strongly typed request object instead of a generic dictionary. This enhances type safety and code clarity.
+Now is posible to create an access token linked to a refresh token in the database.
 
 ### Improvements
-//
+- Refactored AuthorizationCodeGrantHandler to use AuthorizationCodeGrantRequest object.
+- Enhanced type safety and code clarity by replacing generic dictionaries with strongly typed objects.
 
 ### Corrections
 //
