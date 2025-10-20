@@ -7,10 +7,11 @@ class AccessTokenRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create(self, **kwargs) -> AccessToken:
-        at = AccessToken(**kwargs)
-        self.session.add(at)
-        return at
+    def create(self, token: AccessToken) -> AccessToken:
+        self.session.add(token)
+        self.session.commit()
+        self.session.refresh(token)
+        return token
 
     def get(self, token: str) -> AccessToken | None:
         q = select(AccessToken).where(AccessToken.token == token)

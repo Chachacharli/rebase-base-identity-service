@@ -2,10 +2,11 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from models.refresh_token import RefreshToken
-from repositories.access_token_repository import AccessTokenRepository
-from repositories.refresh_token_repository import RefreshTokenRepository
 from sqlmodel import Session
+
+from app.models.refresh_token import RefreshToken
+from app.repositories.access_token_repository import AccessTokenRepository
+from app.repositories.refresh_token_repository import RefreshTokenRepository
 
 ACCESS_TTL = timedelta(minutes=30)
 REFRESH_TTL = timedelta(days=7)
@@ -97,7 +98,7 @@ class TokenService:
 
         # ROTACIÓN: crear nuevo refresh token y marcar reemplazo
         new_refresh_token_str = secrets.token_urlsafe(48)
-        new_rt = self.rt_repo.save(
+        new_rt = self.rt_repo.create(
             token=new_refresh_token_str,
             user_id=rt.user_id,
             client_id=rt.client_id,
