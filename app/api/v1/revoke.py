@@ -20,5 +20,4 @@ def revoke(
     db_token = repo.get(token)
     if db_token:
         repo.revoke(token)
-    # Para access_token JWT → opcional: meter en blacklist Redis
     return {"revoked": True}

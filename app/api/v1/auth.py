@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
 
 from app.core.db import get_session
-from app.core.store import save_authorization_code
+from app.core.store import authorization_code_store
 from app.repositories.client_application_repository import ClientApplicationRepository
 from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
@@ -86,7 +86,7 @@ def authorize_post(
 
     # Generar authorization code (asociado al user_id)
     auth_code = str(uuid4())
-    save_authorization_code(
+    authorization_code_store.save(
         client_id=client_id,
         redirect_uri=redirect_uri,
         code_challenge=code_challenge,

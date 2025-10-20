@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlmodel import JSON, Column, Field, SQLModel
 
@@ -15,3 +15,10 @@ class RefreshToken(SQLModel, PKMixin, table=True):
     scope: List[str] = Field(sa_column=Column(JSON))
     expires_at: datetime
     revoked: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    parent_id: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="refresh_tokens.id"
+    )
+    replaced_by: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="refresh_tokens.id"
+    )

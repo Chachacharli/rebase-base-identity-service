@@ -1,39 +1,72 @@
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, List, Optional
 from uuid import UUID
-
-# Almacena: code -> {client_id, redirect_uri, code_challenge, expires_at}
-authorization_codes: Dict[str, dict] = {}
 
 # Duración del código (10 minutos)
 CODE_TTL = timedelta(minutes=10)
 
 
-def save_authorization_code(
-    code: str,
-    client_id: str,
-    redirect_uri: str,
-    code_challenge: str,
-    user_id: UUID,
-    scope=["openid"],
-):
-    authorization_codes[code] = {
-        "client_id": client_id,
-        "user_id": user_id,
-        "redirect_uri": redirect_uri,
-        "code_challenge": code_challenge,
-        "expires_at": datetime.utcnow() + CODE_TTL,
-        "scope": scope,
-    }
+@dataclass
+class AuthorizationCode:
+    code: str
+    client_id: str
+    redirect_uri: str
+    code_challenge: str
+    user_id: UUID
+    expires_at: datetime = field(default_factory=lambda: datetime.utcnow() + CODE_TTL)
+    scope: List[str] = field(default_factory=lambda: ["openid email profile"])
+
+    @property
+    def is_expired(self) -> bool:
+        """Verifica si el código ha expirado."""
+        return datetime.utcnow() > self.expires_at
 
 
-def validate_authorization_code(code: str):
-    data = authorization_codes.get(code)
-    if not data:
-        return None
-    if data["expires_at"] < datetime.utcnow():
-        del authorization_codes[code]
-        return None
-    # Una vez usado, borramos el código
-    del authorization_codes[code]
-    return data
+class AuthorizationCodeStore:
+    """
+    Almacén en memoria para los códigos de autorización.
+    Puede reemplazarse fácilmente por una implementación persistente (Redis, DB, etc.)
+    """
+
+    def __init__(self):
+        self._store: Dict[str, AuthorizationCode] = {}
+
+    def save(
+        self,
+        code: str,
+        client_id: str,
+        redirect_uri: str,
+        code_challenge: str,
+        user_id: UUID,
+        scope: Optional[List[str]] = None,
+    ) -> AuthorizationCode:
+        """Guarda un nuevo código de autorización."""
+        auth_code = AuthorizationCode(
+            code=code,
+            client_id=client_id,
+            redirect_uri=redirect_uri,
+            code_challenge=code_challenge,
+            user_id=user_id,
+            scope=scope or ["openid"],
+        )
+        self._store[code] = auth_code
+        return auth_code
+
+    def validate(self, code: str) -> Optional[AuthorizationCode]:
+        """Valida un código y lo elimina si es válido o expiró."""
+        auth_code = self._store.get(code)
+        if not auth_code:
+            return None
+
+        if auth_code.is_expired:
+            del self._store[code]
+            return None
+
+        # Código válido, eliminar tras el uso (como exige OAuth2)
+        del self._store[code]
+        return auth_code
+
+
+# Instancia global (en memoria)
+authorization_code_store = AuthorizationCodeStore()
