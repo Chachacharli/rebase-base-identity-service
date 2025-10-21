@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.app_settings import router as app_settings_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.client_application import router as client_application_router
 from app.api.v1.introspect import router as introspect_router
@@ -17,3 +18,4 @@ api_router.include_router(client_application_router, tags=["Client Applications"
 api_router.include_router(introspect_router, tags=["introspect"])
 api_router.include_router(revoke_router, tags=["revoke"])
 api_router.include_router(user_router, tags=["user"])
+api_router.include_router(app_settings_router, tags=["app_settings"])
