@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -7,8 +8,8 @@ from sqlmodel import Session
 
 from app.core.db import get_session
 from app.core.store import authorization_code_store
+from app.repositories.app_settings_repository import AppSettingRepository
 from app.repositories.client_application_repository import ClientApplicationRepository
-from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
 
 templates = Jinja2Templates(directory="app/templates")
@@ -68,6 +69,9 @@ def authorize_post(
     # repo = UserRepository(session)
     service = UserService(session=session)
     user = service.authenticate_user(username, password)
+    app_settings_repository = AppSettingRepository(session)
+
+    ttl_expiration_code = int(app_settings_repository.get("ttl_access_token"))
 
     if not user:
         return templates.TemplateResponse(
@@ -93,6 +97,7 @@ def authorize_post(
         code=auth_code,
         user_id=user.id,
         scope=scope.split(" "),
+        expires_at=datetime.utcnow() + timedelta(seconds=ttl_expiration_code),
     )
 
     # Redirigir con code + state

@@ -9,9 +9,6 @@ from app.repositories.access_token_repository import AccessTokenRepository
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 
-ACCESS_TTL = timedelta(minutes=30)
-REFRESH_TTL = timedelta(days=7)
-
 
 @dataclass
 class TokenPair:
@@ -42,7 +39,8 @@ class TokenService:
         access_token = secrets.token_urlsafe(32)
         refresh_token = secrets.token_urlsafe(48)
 
-        ttl_access = self.app_settings_repo.get("ttl_access_token", 1800)
+        ttl_access = int(self.app_settings_repo.get("ttl_access_token", 1800))
+        ttl_refresh = int(self.app_settings_repo.get("ttl_refresh_token", 604800))
 
         # Access token
         self.at_repo.create(
@@ -50,7 +48,7 @@ class TokenService:
             user_id=user_id,
             client_id=client_id,
             scope=scope,
-            expires_at=now + ACCESS_TTL,
+            expires_at=now + timedelta(seconds=ttl_access),
         )
 
         rt = RefreshToken(
@@ -58,7 +56,7 @@ class TokenService:
             user_id=user_id,
             client_id=client_id,
             scope=scope,
-            expires_at=now + REFRESH_TTL,
+            expires_at=now + timedelta(seconds=ttl_refresh),
             revoked=False,
         )
 
@@ -68,7 +66,7 @@ class TokenService:
         return TokenPair(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_in=int(ACCESS_TTL.total_seconds()),
+            expires_in=ttl_access,
         )
 
     def refresh_with_rotation(
@@ -80,7 +78,8 @@ class TokenService:
         now = self._now()
         rt = self.rt_repo.get(refresh_token_str)
 
-        ttl_access = self.app_settings_repo.get("ttl_access_token", 1800)
+        ttl_access = int(self.app_settings_repo.get("ttl_access_token", 1800))
+        ttl_refresh = int(self.app_settings_repo.get("ttl_refresh_token", 604800))
 
         if not rt:
             # token desconocido -> posible reuse o ataque: no devolver detalle
@@ -109,7 +108,7 @@ class TokenService:
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + REFRESH_TTL,
+            expires_at=now + timedelta(seconds=ttl_refresh),
         )
         # crear nuevo access token ligado al new_rt
         new_access_token_str = secrets.token_urlsafe(32)
@@ -118,7 +117,7 @@ class TokenService:
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + ACCESS_TTL,
+            expires_at=now + timedelta(seconds=ttl_access),
             refresh_token_id=new_rt.id,
         )
 
@@ -128,7 +127,7 @@ class TokenService:
         return TokenPair(
             access_token=new_access_token_str,
             refresh_token=new_refresh_token_str,
-            expires_in=int(ACCESS_TTL.total_seconds()),
+            expires_in=ttl_access,
         )
 
     def revoke_token(self, token_str: str):
