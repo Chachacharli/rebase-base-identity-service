@@ -44,14 +44,16 @@ class AppSettingRepository:
         return value
 
     def set(
-        self, key: str, value: str, description: Optional[str] = None
+        self, key: str, value: str, is_active: bool, description: Optional[str] = None
     ) -> AppSetting:
         """Create or update an existing configuration."""
         stmt = select(AppSetting).where(AppSetting.key == key)
         setting = self.session.exec(stmt).first()
 
         if not setting:
-            setting = AppSetting(key=key, value=value, description=description)
+            setting = AppSetting(
+                key=key, value=value, description=description, is_active=is_active
+            )
         else:
             setting.value = value
             setting.description = description or setting.description

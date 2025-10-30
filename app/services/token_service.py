@@ -6,6 +6,7 @@ from sqlmodel import Session
 
 from app.models.refresh_token import RefreshToken
 from app.repositories.access_token_repository import AccessTokenRepository
+from app.repositories.app_settings_repository import AppSettingRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 
 ACCESS_TTL = timedelta(minutes=30)
@@ -31,6 +32,7 @@ class TokenService:
         self.session = session
         self.rt_repo = RefreshTokenRepository(session)
         self.at_repo = AccessTokenRepository(session)
+        self.app_settings_repo = AppSettingRepository(session)
 
     def _now(self):
         return datetime.now(timezone.utc)
@@ -39,6 +41,8 @@ class TokenService:
         now = self._now()
         access_token = secrets.token_urlsafe(32)
         refresh_token = secrets.token_urlsafe(48)
+
+        ttl_access = self.app_settings_repo.get("ttl_access_token", 1800)
 
         # Access token
         self.at_repo.create(
@@ -75,6 +79,8 @@ class TokenService:
         """
         now = self._now()
         rt = self.rt_repo.get(refresh_token_str)
+
+        ttl_access = self.app_settings_repo.get("ttl_access_token", 1800)
 
         if not rt:
             # token desconocido -> posible reuse o ataque: no devolver detalle

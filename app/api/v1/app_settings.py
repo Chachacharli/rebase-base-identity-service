@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from app.core.db import get_session
@@ -11,16 +11,18 @@ router = APIRouter()
 # GET: get value of a specific configuration
 @router.get("/app-settings/{key}")
 def get_app_setting(key: str, session: Session = Depends(get_session)):
-    app_setting = AppSettingRepository(session).get_by_key(key)
+    app_setting = AppSettingRepository(session).get(key)
     if not app_setting:
         raise HTTPException(status_code=404, detail="App setting not found")
-    return app_setting
+    # TODO: Convert to AppSettingRead schema
+    return AppSettingRead.model_validate(app_setting)
 
 
 # GET : get all configurations
 @router.get("/app-settings/")
 def get_all_app_settings(session: Session = Depends(get_session)):
     app_settings = AppSettingRepository(session).get_all()
+    # TODO: Convert to list of AppSettingRead schema
     return app_settings
 
 
@@ -35,6 +37,7 @@ def create_app_setting(
         value=app_setting.value,
         description=app_setting.description,
     )
+    # TODO: Convert to AppSettingRead schema
     return app_setting
 
 
@@ -44,6 +47,7 @@ def update_app_setting(
     app_setting_update: AppSettingUpdate,
     session: Session = Depends(get_session),
 ):
+    print(app_setting_update)
     app_setting = AppSettingRepository(session).set(
         key=app_setting_update.key,
         value=app_setting_update.value,
@@ -52,4 +56,6 @@ def update_app_setting(
     )
     if not app_setting:
         raise HTTPException(status_code=404, detail="App setting not found")
+
+    # TODO: Convert to AppSettingRead schema
     return app_setting
