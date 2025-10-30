@@ -1,5 +1,17 @@
 # rebase-base-identity-service
 
+## 0.2.3 - 29/10/2025
+
+### Summary
+Now the token expiration handling uses the configured TTL values for access and refresh tokens, all this from the application settings table.
+
+### Improvements
+
+### Corrections
+- Fixed token expiration handling to use configured TTL values.
+
+### Decrements
+
 ## 0.2.2 - 20/10/2025
 
 ### Summary

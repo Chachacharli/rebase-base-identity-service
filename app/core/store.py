@@ -1,10 +1,7 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional
 from uuid import UUID
-
-# Duración del código (10 minutos)
-CODE_TTL = timedelta(minutes=10)
 
 
 @dataclass
@@ -14,7 +11,7 @@ class AuthorizationCode:
     redirect_uri: str
     code_challenge: str
     user_id: UUID
-    expires_at: datetime = field(default_factory=lambda: datetime.utcnow() + CODE_TTL)
+    expires_at: datetime
     scope: List[str] = field(default_factory=lambda: ["openid email profile"])
 
     @property
@@ -40,6 +37,7 @@ class AuthorizationCodeStore:
         code_challenge: str,
         user_id: UUID,
         scope: Optional[List[str]] = None,
+        expires_at: Optional[datetime] = None,
     ) -> AuthorizationCode:
         """Guarda un nuevo código de autorización."""
         auth_code = AuthorizationCode(
@@ -49,6 +47,7 @@ class AuthorizationCodeStore:
             code_challenge=code_challenge,
             user_id=user_id,
             scope=scope or ["openid"],
+            expires_at=expires_at,
         )
         self._store[code] = auth_code
         return auth_code

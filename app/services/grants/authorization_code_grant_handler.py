@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from fastapi import HTTPException
 from jose import jwt
+from sqlmodel import Session
 
 from app.core.config import Settings
 from app.core.store import authorization_code_store
@@ -13,21 +14,23 @@ from app.domain.tokens.authorization_code_grant_request import (
 )
 from app.domain.tokens.id_token_payload import IDTokenPayload
 from app.domain.tokens.token_response import GrantTokenResponse
+from app.repositories.app_settings_repository import AppSettingRepository
 from app.services.grants.token_grant_handler import TokenGrantHandler
-
-REFRESH_TOKEN_TTL = 60 * 60 * 24 * 1
-ACCESS_TOKEN_TTL = timedelta(minutes=30)
 
 
 class AuthorizationCodeGrantHandler(TokenGrantHandler):
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, session: Session):
         self.settings = settings
+        self.session = session
+        self.app_settings_repository = AppSettingRepository(session)
 
     def handle(self, form_data: AuthorizationCodeGrantRequest) -> GrantTokenResponse:
         code = form_data.code
         redirect_uri = form_data.redirect_uri
         client_id = form_data.client_id
         code_verifier = form_data.code_verifier
+
+        ttl_access_token = self.app_settings_repository.get("ttl_access_token", 1800)
 
         data = authorization_code_store.validate(code)
         if not data:
@@ -49,7 +52,7 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
             iss=self.settings.BASE_URL,
             sub=str(data.user_id),
             aud=client_id,
-            exp=datetime.utcnow() + timedelta(minutes=30),
+            exp=datetime.utcnow() + timedelta(seconds=int(ttl_access_token)),
             iat=datetime.utcnow(),
         )
 
@@ -67,7 +70,7 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
             user_id=data.user_id,
             client_id=client_id,
             token_type="bearer",
-            expires_in=int(ACCESS_TOKEN_TTL.total_seconds()),
+            expires_in=int(ttl_access_token),
             id_token=id_token,
             refresh_token=refresh_token,
             scope=data.scope,

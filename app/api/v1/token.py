@@ -21,7 +21,7 @@ router = APIRouter()
 
 
 grant_handlers = {
-    GrantType.AUTHORIZATION_CODE: AuthorizationCodeGrantHandler(settings),
+    GrantType.AUTHORIZATION_CODE: AuthorizationCodeGrantHandler,
 }
 
 
@@ -36,7 +36,7 @@ def token(
     session: Session = Depends(get_session),
 ):
     if grant_type == GrantType.AUTHORIZATION_CODE:
-        handler = AuthorizationCodeGrantHandler(settings)
+        handler = AuthorizationCodeGrantHandler(settings, session)
 
         request = AuthorizationCodeGrantRequest(
             grant_type=grant_type,
