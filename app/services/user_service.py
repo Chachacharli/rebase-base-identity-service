@@ -29,3 +29,8 @@ class UserService:
         self.session.add(user)
         self.session.commit()
         self.session.refresh(user)
+
+    def get_user_by_id(self, user_id: str) -> User | None:
+        statement = select(User).where(User.id == user_id)
+        user = self.session.exec(statement).first()
+        return user

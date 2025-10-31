@@ -22,3 +22,33 @@ def create_user(user: UserCreate, db: Session = Depends(get_session)):
     )
 
     return new_user
+
+
+@router.get("/user/{user_id}", response_model=UserRead)
+def get_user(user_id: str, db: Session = Depends(get_session)):
+    user_service = UserService(db)
+    user = user_service.get_user_by_id(user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserRead.from_orm(user)
+
+
+@router.put("/user/{user_id}", response_model=UserRead)
+def update_user(
+    user_id: str, user_update: UserUpdate, db: Session = Depends(get_session)
+):
+    # TODO: implement update logic
+    pass
+
+
+@router.delete("/user/{user_id}")
+def delete_user(user_id: str, db: Session = Depends(get_session)):
+    # TODO: implemente soft delete logic
+    pass
+
+
+@router.post("/user/{user_id}/set_role")
+def set_user_role(user_id: str, role_id: str, db: Session = Depends(get_session)):
+    # TODO: Implement set role logic
+    pass
