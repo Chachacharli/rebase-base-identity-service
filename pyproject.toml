@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "rebase-base-identity-service"
-version = "0.2.3"
+version = "0.2.4"
 description = "A base identity service using FastAPI"
-authors = ["Carlos Alberto torres Cano"]
+authors = ["Carlos Alberto Torres Cano"]
 license = "MIT"
 readme = "README.md"
 
