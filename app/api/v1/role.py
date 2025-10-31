@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 router = APIRouter(prefix="/v1/roles")
@@ -14,36 +16,36 @@ def create_role():
 
 
 @router.get("/{role_id}")
-def get_role(role_id: str):
+def get_role(role_id: UUID):
     return {"role": {"id": role_id}}
 
 
 @router.put("/{role_id}")
-def update_role(role_id: str):
+def update_role(role_id: UUID):
     return {"role": {"id": role_id}}
 
 
 @router.delete("/{role_id}")
-def delete_role(role_id: str):
+def delete_role(role_id: UUID):
     # soft delete
     return {"deleted": True}
 
 
 @router.post("/{role_id}/set_permissions")
-def set_role_permissions(role_id: str):
+def set_role_permissions(role_id: UUID):
     return {"role": {"id": role_id, "permissions_set": True}}
 
 
 @router.post("/{role_id}/set_permission")
-def set_role_permission(role_id: str):
+def set_role_permission(role_id: UUID):
     return {"role": {"id": role_id, "permission_set": True}}
 
 
 @router.put("/{role_id}/remove_permission")
-def remove_role_permission(role_id: str):
+def remove_role_permission(role_id: UUID):
     return {"role": {"id": role_id, "permission_removed": True}}
 
 
 @router.put("/{role_id}/remove_permissions")
-def remove_role_permissions(role_id: str):
+def remove_role_permissions(role_id: UUID):
     return {"role": {"id": role_id, "permissions_removed": True}}
