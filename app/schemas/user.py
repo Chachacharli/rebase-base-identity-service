@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -23,3 +23,13 @@ class UserUpdate(BaseModel):
     username: Optional[str]
     email: Optional[str]
     password: Optional[str]
+
+
+class UserSetRole(BaseModel):
+    id: UUID
+    role_id: UUID
+
+
+class UserSetRoles(BaseModel):
+    id: UUID
+    role_ids: List[UUID]
