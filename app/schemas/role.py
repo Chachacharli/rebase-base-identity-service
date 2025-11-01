@@ -21,6 +21,15 @@ class RoleRead(BaseModel):
         from_attributes = True
 
 
+class RoleReadWithoutPermissions(BaseModel):
+    id: UUID
+    name: str
+    description: str
+
+    class Config:
+        from_attributes = True
+
+
 class RoleUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]

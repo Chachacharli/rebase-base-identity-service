@@ -1,7 +1,10 @@
 from passlib.hash import pbkdf2_sha256
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.models.user import User
+from app.repositories.user_repository import UserRepository
+from app.schemas.user import UserSetRole
 
 
 class UserService:
@@ -37,6 +40,11 @@ class UserService:
         self.session.refresh(user)
 
     def get_user_by_id(self, user_id: str) -> User | None:
-        statement = select(User).where(User.id == user_id)
-        user = self.session.exec(statement).first()
-        return user
+        query = select(User).where(User.id == user_id).options(selectinload(User.roles))
+        return self.session.exec(query).first()
+
+    def set_user_role(self, user_id: str, role_id: str) -> User | None:
+        user_repo = UserRepository(self.session)
+        user_set_role = UserSetRole(id=user_id, role_id=role_id)
+        updated_user = user_repo.set_role(user_set_role)
+        return updated_user

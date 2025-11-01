@@ -1,9 +1,8 @@
 from sqlmodel import Session, select
 
+from app.exceptions.http_exceptions import NotFoundException
 from app.models.permission import Permission
 from app.schemas.permission import PermissionCreate, PermissionUpdate
-
-from app.exceptions.base import NotFoundException
 
 
 class PermissionRepository:
@@ -30,7 +29,7 @@ class PermissionRepository:
     def update(self, permission_id: str, permission_update: PermissionUpdate):
         permission = self.get_by_id(permission_id)
         if not permission:
-            return None
+            raise NotFoundException(entity="Permission", entity_id=permission_id)
 
         permission_data = permission_update.model_dump(exclude_unset=True)
         for key, value in permission_data.items():

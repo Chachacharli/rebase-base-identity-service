@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.role import RoleReadWithoutPermissions
+
 
 class UserCreate(BaseModel):
     username: str
@@ -30,6 +32,5 @@ class UserSetRole(BaseModel):
     role_id: UUID
 
 
-class UserSetRoles(BaseModel):
-    id: UUID
-    role_ids: List[UUID]
+class UserWithRoles(UserRead):
+    roles: List[RoleReadWithoutPermissions] = []

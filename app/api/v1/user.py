@@ -5,7 +5,13 @@ from sqlmodel import Session
 
 from app.core.db import get_session
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    UserCreate,
+    UserRead,
+    UserSetRole,
+    UserUpdate,
+    UserWithRoles,
+)
 from app.services.user_service import UserService
 
 router = APIRouter()
@@ -25,14 +31,14 @@ def create_user(user: UserCreate, db: Session = Depends(get_session)):
     return new_user
 
 
-@router.get("/user/{user_id}", response_model=UserRead)
-def get_user(user_id: UUID, db: Session = Depends(get_session)):
+@router.get("/user/{user_id}", response_model=UserWithRoles)
+def get_user(user_id: UUID, db: Session = Depends(get_session)) -> UserWithRoles:
     user_service = UserService(db)
     user = user_service.get_user_by_id(user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return UserRead.from_orm(user)
+    return UserWithRoles.model_validate(user)
 
 
 @router.get("/user", response_model=list[UserRead])
@@ -57,6 +63,11 @@ def delete_user(user_id: UUID, db: Session = Depends(get_session)):
 
 
 @router.post("/user/{user_id}/set_role")
-def set_user_role(user_id: UUID, role_id: UUID, db: Session = Depends(get_session)):
-    # TODO: Implement set role logic
-    pass
+def set_user_role(
+    user_id: UUID, user_set_roles: UserSetRole, db: Session = Depends(get_session)
+) -> UserWithRoles:
+    user_service = UserService(db)
+    updated_user = user_service.set_user_role(
+        user_id=user_id, role_id=user_set_roles.role_id
+    )
+    return UserWithRoles.model_validate(updated_user)
