@@ -15,17 +15,17 @@ from app.schemas.client_applications import (
 )
 from app.services.client_application_service import ClientService
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/client_application")
 
 
-@router.get("/client_applications", response_model=List[ClientApplicationRead])
+@router.get("/", response_model=List[ClientApplicationRead])
 def list_clients(session: Session = Depends(get_session)):
     repository = ClientApplicationRepository(session)
     service = ClientService(repository)
     return service.list_clients()
 
 
-@router.get("/client_applications/{client_id}", response_model=ClientApplicationRead)
+@router.get("/{client_id}", response_model=ClientApplicationRead)
 def get_client(client_id: str, session: Session = Depends(get_session)):
     repository = ClientApplicationRepository(session)
     service = ClientService(repository)
@@ -36,7 +36,7 @@ def get_client(client_id: str, session: Session = Depends(get_session)):
 
 
 @router.post(
-    "/client_applications",
+    "/",
     response_model=ClientApplicationRead,
     status_code=status.HTTP_201_CREATED,
 )
@@ -53,7 +53,7 @@ def register_client(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/client_applications/{client_id}", response_model=ClientApplicationRead)
+@router.put("/{client_id}", response_model=ClientApplicationRead)
 def update_client(
     client_id: str,
     client_data: ClientApplicationUpdate,

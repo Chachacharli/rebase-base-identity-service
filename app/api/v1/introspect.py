@@ -8,10 +8,10 @@ from app.core.config import settings
 from app.core.db import get_session
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/introspect")
 
 
-@router.post("/introspect")
+@router.post("/")
 def introspect(token: str = Form(...), session: Session = Depends(get_session)):
     try:
         payload = jwt.decode(

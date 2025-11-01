@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.core.config import settings
 from app.core.security import get_jwk
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/oidc")
 
 
 @router.get("/.well-known/openid-configuration")

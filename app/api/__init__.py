@@ -14,7 +14,7 @@ from app.api.v1.user import router as user_router
 
 api_router = APIRouter()
 
-api_router.include_router(oidc_router, prefix="/oidc", tags=["OIDC"])
+api_router.include_router(oidc_router, tags=["OIDC"])
 api_router.include_router(auth_router, tags=["Auth"])
 api_router.include_router(token_router, tags=["Token"])
 api_router.include_router(client_application_router, tags=["Client Applications"])
