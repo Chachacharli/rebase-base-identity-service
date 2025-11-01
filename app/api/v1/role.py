@@ -11,7 +11,7 @@ router = APIRouter(prefix="/v1/roles")
 
 
 @router.get("/")
-def list_roles(session: Session = Depends(get_session)):
+def list_roles(session: Session = Depends(get_session)) -> list[RoleRead]:
     role_repo = RoleRepository(session)
     roles = role_repo.get_roles()
     return [RoleRead.model_validate(role) for role in roles]
@@ -66,3 +66,9 @@ def remove_role_permission(
     role_repo = RoleRepository(session)
     db_role = role_repo.remove_permission(role_id, role_set_permission)
     return RoleRead.model_validate(db_role)
+
+
+@router.get("/test")
+def test_error(test: str):
+    print("Generating internal error...", test)
+    raise ValueError("Esto es una prueba de error interno")

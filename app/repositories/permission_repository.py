@@ -1,7 +1,9 @@
 from sqlmodel import Session, select
 
 from app.models.permission import Permission
-from app.schemas.permission import PermissionCreate, PermissionRead, PermissionUpdate
+from app.schemas.permission import PermissionCreate, PermissionUpdate
+
+from app.exceptions.base import NotFoundException
 
 
 class PermissionRepository:
@@ -13,9 +15,10 @@ class PermissionRepository:
         return self.session.exec(statement).all()
 
     def get_by_id(self, permission_id: str):
-        return self.session.exec(
-            select(Permission).where(Permission.id == permission_id)
-        ).first()
+        permission = self.session.get(Permission, permission_id)
+        if not permission:
+            raise NotFoundException(entity="Permission", entity_id=permission_id)
+        return permission
 
     def create(self, permission: PermissionCreate):
         permission = Permission.model_validate(permission)

@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.api import api_router
 from app.core.db import init_db
+from app.core.exceptions_handler import register_exception_handlers
 
 pyproject_data = toml.load("pyproject.toml")
 __version__ = pyproject_data["tool"]["poetry"]["version"]
@@ -28,6 +29,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=__name__, version=__version__, description=__description__)
+
+register_exception_handlers(app)
 
 templates = Jinja2Templates(directory="app/templates")
 

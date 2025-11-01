@@ -1,5 +1,6 @@
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
+from uuid import UUID
 
 from app.models.permission import Permission
 from app.models.role import Role
@@ -18,7 +19,7 @@ class RoleRepository:
         query = select(Role).options(selectinload(Role.permissions))
         return self.session.exec(query).all()
 
-    def get_by_id(self, role_id: str):
+    def get_by_id(self, role_id: UUID):
         query = (
             select(Role)
             .where(Role.id == role_id)
@@ -33,7 +34,7 @@ class RoleRepository:
         self.session.refresh(db_role)
         return db_role
 
-    def update(self, role_id: str, role_update: RoleUpdate):
+    def update(self, role_id: UUID, role_update: RoleUpdate):
         role = self.get_by_id(role_id)
         if not role:
             return None
@@ -47,7 +48,7 @@ class RoleRepository:
         self.session.refresh(role)
         return role
 
-    def set_permission(self, role_id: str, role_set_permission: RoleSetPermission):
+    def set_permission(self, role_id: UUID, role_set_permission: RoleSetPermission):
         role = self.get_by_id(role_id)
         if not role:
             return None
@@ -64,7 +65,7 @@ class RoleRepository:
         self.session.refresh(role)
         return role
 
-    def remove_permission(self, role_id: str, role_set_permission: RoleSetPermission):
+    def remove_permission(self, role_id: UUID, role_set_permission: RoleSetPermission):
         role = self.get_by_id(role_id)
         if not role:
             return None
