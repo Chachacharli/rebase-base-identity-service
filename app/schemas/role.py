@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.permission import PermissionRead
+
 
 class RoleCreate(BaseModel):
     name: str
@@ -13,6 +15,7 @@ class RoleRead(BaseModel):
     id: UUID
     name: str
     description: str
+    permissions: list[PermissionRead] = []
 
     class Config:
         from_attributes = True
@@ -25,7 +28,7 @@ class RoleUpdate(BaseModel):
 
 class RoleSetPermission(BaseModel):
     id: UUID
-    permission_ids: UUID
+    permission_id: UUID
 
 
 class RoleSetPermissions(BaseModel):

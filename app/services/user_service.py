@@ -8,6 +8,12 @@ class UserService:
     def __init__(self, session: Session):
         self.session = session
 
+    def get_all_users(self) -> list[User]:
+        # TODO: Pagination
+        statement = select(User)
+        users = self.session.exec(statement).all()
+        return users
+
     def create_user(self, username: str, email: str, password: str) -> User:
         hashed_pw = pbkdf2_sha256.hash(password)
         user = User(username=username, email=email, password=hashed_pw)

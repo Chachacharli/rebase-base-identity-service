@@ -1,28 +1,43 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
+
+from app.core.db import get_session
+from app.repositories.role_repository import RoleRepository
+from app.schemas.role import RoleCreate, RoleRead, RoleSetPermission, RoleUpdate
 
 router = APIRouter(prefix="/v1/roles")
 
 
 @router.get("/")
-def list_roles():
-    return {"roles": []}
+def list_roles(session: Session = Depends(get_session)):
+    role_repo = RoleRepository(session)
+    roles = role_repo.get_roles()
+    return [RoleRead.model_validate(role) for role in roles]
 
 
 @router.post("/")
-def create_role():
-    return {"role": {}}
+def create_role(role: RoleCreate, session: Session = Depends(get_session)):
+    role_repo = RoleRepository(session)
+    db_role = role_repo.create(role)
+    return RoleRead.model_validate(db_role)
 
 
 @router.get("/{role_id}")
-def get_role(role_id: UUID):
-    return {"role": {"id": role_id}}
+def get_role(role_id: UUID, session: Session = Depends(get_session)):
+    role_repo = RoleRepository(session)
+    db_role = role_repo.get_by_id(role_id)
+    return RoleRead.model_validate(db_role)
 
 
 @router.put("/{role_id}")
-def update_role(role_id: UUID):
-    return {"role": {"id": role_id}}
+def update_role(
+    role_id: UUID, role: RoleUpdate, session: Session = Depends(get_session)
+):
+    role_repo = RoleRepository(session)
+    db_role = role_repo.update(role_id, role)
+    return RoleRead.model_validate(db_role)
 
 
 @router.delete("/{role_id}")
@@ -31,21 +46,23 @@ def delete_role(role_id: UUID):
     return {"deleted": True}
 
 
-@router.post("/{role_id}/set_permissions")
-def set_role_permissions(role_id: UUID):
-    return {"role": {"id": role_id, "permissions_set": True}}
-
-
 @router.post("/{role_id}/set_permission")
-def set_role_permission(role_id: UUID):
-    return {"role": {"id": role_id, "permission_set": True}}
+def set_role_permission(
+    role_id: UUID,
+    role_set_permission: RoleSetPermission,
+    session: Session = Depends(get_session),
+):
+    role_repo = RoleRepository(session)
+    db_role = role_repo.set_permission(role_id, role_set_permission)
+    return RoleRead.model_validate(db_role)
 
 
 @router.put("/{role_id}/remove_permission")
-def remove_role_permission(role_id: UUID):
-    return {"role": {"id": role_id, "permission_removed": True}}
-
-
-@router.put("/{role_id}/remove_permissions")
-def remove_role_permissions(role_id: UUID):
-    return {"role": {"id": role_id, "permissions_removed": True}}
+def remove_role_permission(
+    role_id: UUID,
+    role_set_permission: RoleSetPermission,
+    session: Session = Depends(get_session),
+):
+    role_repo = RoleRepository(session)
+    db_role = role_repo.remove_permission(role_id, role_set_permission)
+    return RoleRead.model_validate(db_role)

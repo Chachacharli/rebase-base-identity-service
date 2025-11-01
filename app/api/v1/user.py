@@ -35,6 +35,13 @@ def get_user(user_id: UUID, db: Session = Depends(get_session)):
     return UserRead.from_orm(user)
 
 
+@router.get("/user", response_model=list[UserRead])
+def list_users(db: Session = Depends(get_session)):
+    user_service = UserService(db)
+    users = user_service.get_all_users()
+    return [UserRead.model_validate(user) for user in users]
+
+
 @router.put("/user/{user_id}", response_model=UserRead)
 def update_user(
     user_id: UUID, user_update: UserUpdate, db: Session = Depends(get_session)
