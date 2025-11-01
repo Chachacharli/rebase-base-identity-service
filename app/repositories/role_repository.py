@@ -1,3 +1,4 @@
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.models.permission import Permission
@@ -14,11 +15,16 @@ class RoleRepository:
         self.session = session
 
     def get_roles(self):
-        # TODO: Pagination
-        return self.session.exec(select(Role)).all()
+        query = select(Role).options(selectinload(Role.permissions))
+        return self.session.exec(query).all()
 
     def get_by_id(self, role_id: str):
-        return self.session.exec(select(Role).where(Role.id == role_id)).first()
+        query = (
+            select(Role)
+            .where(Role.id == role_id)
+            .options(selectinload(Role.permissions))
+        )
+        return self.session.exec(query).first()
 
     def create(self, role: RoleCreate):
         db_role = Role.model_validate(role)
@@ -50,7 +56,9 @@ class RoleRepository:
         if not permission:
             return None
 
-        role.permissions.append(permission)
+        if permission not in role.permissions:
+            role.permissions.append(permission)
+
         self.session.add(role)
         self.session.commit()
         self.session.refresh(role)
@@ -65,7 +73,9 @@ class RoleRepository:
         if not permission:
             return None
 
-        role.permissions.remove(permission)
+        if permission in role.permissions:
+            role.permissions.remove(permission)
+
         self.session.add(role)
         self.session.commit()
         self.session.refresh(role)
