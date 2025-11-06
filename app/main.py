@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 # Import information of pyproject.toml
@@ -9,11 +10,15 @@ from fastapi.templating import Jinja2Templates
 from app.api import api_router
 from app.core.db import init_db
 from app.core.exceptions_handler import register_exception_handlers
+from app.services.token_cleanup_service import TokenCleanupService
 
 pyproject_data = toml.load("pyproject.toml")
 __version__ = pyproject_data["tool"]["poetry"]["version"]
 __name__ = pyproject_data["tool"]["poetry"]["name"]
 __description__ = pyproject_data["tool"]["poetry"]["description"]
+
+
+cleanup_service = TokenCleanupService(interval_seconds=300)
 
 
 # -----------------------------
@@ -22,7 +27,9 @@ __description__ = pyproject_data["tool"]["poetry"]["description"]
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Se ejecuta al iniciar la app
-    init_db()
+    # init_db()
+    asyncio.create_task(cleanup_service.start())
+
     yield
     # Aquí podrías poner lógica de cierre (shutdown)
     print("Closing app...")

@@ -16,7 +16,6 @@ def get_current_user(
     session: Session = Depends(get_session),
 ) -> User:
     """Retrieve the current authenticated user based on the provided token."""
-    # Implementation to retrieve user from token goes here
     access_token_repo = AccessTokenRepository(session)
     user_service = UserService(session)
     access_token = access_token_repo.get(token.credentials)
@@ -28,7 +27,7 @@ def get_current_user(
     return user
 
 
-def require_role(required_role: str):
+def require_role(required_role: str) -> User:
     """Required specific role."""
 
     def wrapper(user: User = Depends(get_current_user)):
@@ -43,7 +42,7 @@ def require_role(required_role: str):
     return wrapper
 
 
-def require_roles(required_roles: list[str]):
+def require_roles(required_roles: list[str]) -> User:
     """Required any of the roles in the list."""
 
     def wrapper(user: User = Depends(get_current_user)):
@@ -58,7 +57,7 @@ def require_roles(required_roles: list[str]):
     return wrapper
 
 
-def require_permission(required_permission: str):
+def require_permission(required_permission: str) -> User:
     """Required specific permission."""
 
     def wrapper(user: User = Depends(get_current_user)):
