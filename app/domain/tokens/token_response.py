@@ -23,3 +23,11 @@ class GrantTokenResponse:
             "user_id": self.user_id,
             "client_id": self.client_id,
         }
+
+
+@dataclass
+class InstrospectResponse:
+    active: bool
+    # sub: str | None = None
+    client_id: str | None = None
+    # type: str | None = None

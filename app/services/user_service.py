@@ -43,8 +43,14 @@ class UserService:
         query = select(User).where(User.id == user_id).options(selectinload(User.roles))
         return self.session.exec(query).first()
 
-    def set_user_role(self, user_id: str, role_id: str) -> User | None:
+    def set_user_role(self, user_role: UserSetRole) -> User | None:
         user_repo = UserRepository(self.session)
-        user_set_role = UserSetRole(id=user_id, role_id=role_id)
+        user_set_role = UserSetRole(id=user_role.id, role_id=user_role.role_id)
         updated_user = user_repo.set_role(user_set_role)
+        return updated_user
+
+    def remove_user_role(self, user_role: UserSetRole) -> User | None:
+        user_repo = UserRepository(self.session)
+        user_set_role = UserSetRole(id=user_role.id, role_id=user_role.role_id)
+        updated_user = user_repo.remove_role(user_set_role)
         return updated_user
