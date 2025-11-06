@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from app.core.auth.dependencies import require_role
 from app.core.db import get_session
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import (
@@ -17,7 +18,9 @@ from app.services.user_service import UserService
 router = APIRouter(prefix="/v1/user")
 
 
-@router.post("/", response_model=UserRead)
+@router.post(
+    "/", response_model=UserRead, dependencies=[Depends(require_role("admin"))]
+)
 def create_user(user: UserCreate, db: Session = Depends(get_session)):
     user_service = UserService(db)
     created_user = user_service.create_user(
@@ -41,7 +44,11 @@ def get_user(user_id: UUID, db: Session = Depends(get_session)) -> UserWithRoles
     return UserWithRoles.model_validate(user)
 
 
-@router.get("/", response_model=list[UserRead])
+@router.get(
+    "/",
+    response_model=list[UserRead],
+    dependencies=[Depends(require_role("admin"))],
+)
 def list_users(db: Session = Depends(get_session)):
     user_service = UserService(db)
     users = user_service.get_all_users()
