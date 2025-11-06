@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
+
+from app.schemas.role import RoleReadWithoutPermissions
 
 
 class UserCreate(BaseModel):
@@ -23,3 +25,12 @@ class UserUpdate(BaseModel):
     username: Optional[str]
     email: Optional[str]
     password: Optional[str]
+
+
+class UserSetRole(BaseModel):
+    id: UUID
+    role_id: UUID
+
+
+class UserWithRoles(UserRead):
+    roles: List[RoleReadWithoutPermissions] = []

@@ -5,11 +5,11 @@ from app.core.db import get_session
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.schemas.app_settings import AppSettingCreate, AppSettingRead, AppSettingUpdate
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/app-settings")
 
 
 # GET: get value of a specific configuration
-@router.get("/app-settings/{key}")
+@router.get("/{key}")
 def get_app_setting(key: str, session: Session = Depends(get_session)):
     app_setting = AppSettingRepository(session).get(key)
     if not app_setting:
@@ -19,7 +19,7 @@ def get_app_setting(key: str, session: Session = Depends(get_session)):
 
 
 # GET : get all configurations
-@router.get("/app-settings/")
+@router.get("/")
 def get_all_app_settings(session: Session = Depends(get_session)):
     app_settings = AppSettingRepository(session).get_all()
     # TODO: Convert to list of AppSettingRead schema
@@ -27,7 +27,7 @@ def get_all_app_settings(session: Session = Depends(get_session)):
 
 
 # POST: create a configuration value
-@router.post("/app-settings/")
+@router.post("/")
 def create_app_setting(
     app_setting: AppSettingCreate,
     session: Session = Depends(get_session),
@@ -42,7 +42,7 @@ def create_app_setting(
 
 
 # PUT: update a configuration value
-@router.put("/app-settings/{key}")
+@router.put("/{key}")
 def update_app_setting(
     app_setting_update: AppSettingUpdate,
     session: Session = Depends(get_session),
