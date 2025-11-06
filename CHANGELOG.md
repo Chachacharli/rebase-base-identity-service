@@ -2,9 +2,11 @@
 
 # 0.2.4 - 05/11/2025
 ### Summary
-Implementation of health check endpoints using FastAPI. These endpoints provide basic health status information for the service.
+Added management of roles and permissions for users.
+Implementation of health check endpoints using FastAPI. These endpoints provide basic health status information for the service. 
 
 ### Improvements
+- Implement CRUD for Roles, Permissions, and Role-Permission and User-Roles assignments.
 - Added health check endpoints for monitoring service status, including a root health endpoint and a detailed health status endpoint. (Basic structure for future health checks like database connectivity, external service status, etc.)
 - Add dependency to retrieve the current user from the token for protected endpoints.
 
