@@ -26,16 +26,24 @@ cleanup_service = TokenCleanupService(interval_seconds=300)
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Se ejecuta al iniciar la app
+    print("Starting app...")
+    # Init database for the first time
+    # TODO: Falta agregar migraciones con Alembic
     # init_db()
-    asyncio.create_task(cleanup_service.start())
+
+    # TODO: Agregar forma de acoplar REDIs/cache en vez de guardar tokens en bd
+
+    # Init cleanup service to remove expired tokens periodically
+    # asyncio.create_task(cleanup_service.start())
 
     yield
     # Aquí podrías poner lógica de cierre (shutdown)
     print("Closing app...")
 
 
-app = FastAPI(title=__name__, version=__version__, description=__description__)
+app = FastAPI(
+    lifespan=lifespan, title=__name__, version=__version__, description=__description__
+)
 
 register_exception_handlers(app)
 

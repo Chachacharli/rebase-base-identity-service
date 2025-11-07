@@ -79,10 +79,10 @@ def token(
     elif grant_type == GrantType.REFRESH_TOKEN:
         svc = TokenService(session)
         try:
-            with session.begin():
-                result = svc.refresh_with_rotation(refresh_token, client_id)
-                session.commit()
+            result = svc.refresh_with_rotation(refresh_token, client_id)
+            session.commit()
         except ValueError:
+            session.rollback()
             raise HTTPException(status_code=400, detail="invalid_grant")
         return result
 
