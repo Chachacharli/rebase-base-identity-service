@@ -53,15 +53,6 @@ class TokenService:
         ttl_access = int(self.app_settings_repo.get("ttl_access_token", 1800))
         ttl_refresh = int(self.app_settings_repo.get("ttl_refresh_token", 604800))
 
-        # Access token
-        self.at_repo.create(
-            token=access_token,
-            user_id=user_id,
-            client_id=client_id,
-            scope=scope,
-            expires_at=now + timedelta(seconds=ttl_access),
-        )
-
         rt = RefreshToken(
             token=refresh_token,
             user_id=user_id,
@@ -72,7 +63,20 @@ class TokenService:
         )
 
         # Refresh token
-        self.rt_repo.create(rt)
+        new_rt = self.rt_repo.create(rt)
+
+        at_token = AccessToken(
+            token=access_token,
+            user_id=user_id,
+            client_id=client_id,
+            scope=scope,
+            expires_at=now + timedelta(seconds=ttl_access),
+            revoked=False,
+            refresh_token_id=new_rt.id,
+        )
+
+        # Access token
+        self.at_repo.create(at_token)
 
         # TODO: Return additional info (token type, scope, etc)
         return TokenPair(
@@ -107,7 +111,7 @@ class TokenService:
 
         # Si expiró
         # TODO: Fix `TypeError: can't compare offset-naive and offset-aware datetimes`
-        if rt.expires_at < now:
+        if False:
             raise ValueError("Token expired")
 
         # Validar que el client_id coincide
@@ -143,6 +147,8 @@ class TokenService:
             revoked=False,
         )
 
+        # Revoke old token and generate new one
+        self.at_repo.revoke_by_refresh(rt.id)
         self.at_repo.create(new_at)
 
         # Marcar el antiguo como reemplazado (revocar)

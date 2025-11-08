@@ -1,13 +1,10 @@
 import base64
 import hashlib
-import secrets
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException
 from jose import jwt
-from sqlmodel import Session
 
-from app.core.config import Settings
 from app.core.store import authorization_code_store
 from app.domain.tokens.authorization_code_grant_request import (
     AuthorizationCodeGrantRequest,
@@ -16,43 +13,42 @@ from app.domain.tokens.id_token_payload import IDTokenPayload
 from app.domain.tokens.token_response import GrantTokenResponse
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.services.grants.token_grant_handler import TokenGrantHandler
+from app.services.token_service import TokenService
 
 
 class AuthorizationCodeGrantHandler(TokenGrantHandler):
-    def __init__(self, settings: Settings, session: Session):
-        self.settings = settings
-        self.session = session
-        self.app_settings_repository = AppSettingRepository(session)
-
     def handle(self, form_data: AuthorizationCodeGrantRequest) -> GrantTokenResponse:
-        code = form_data.code
-        redirect_uri = form_data.redirect_uri
-        client_id = form_data.client_id
-        code_verifier = form_data.code_verifier
-
-        ttl_access_token = self.app_settings_repository.get("ttl_access_token", 1800)
-
-        data = authorization_code_store.validate(code)
+        data = authorization_code_store.validate(form_data.code)
         if not data:
             raise HTTPException(status_code=400, detail="Invalid or expired code")
 
-        if data.redirect_uri != redirect_uri or data.client_id != client_id:
+        if (
+            data.redirect_uri != form_data.redirect_uri
+            or data.client_id != form_data.client_id
+        ):
             raise HTTPException(
                 status_code=400, detail="Invalid client or redirect_uri"
             )
 
-        hashed = hashlib.sha256(code_verifier.encode()).digest()
+        hashed = hashlib.sha256(form_data.code_verifier.encode()).digest()
         calc_challenge = base64.urlsafe_b64encode(hashed).rstrip(b"=").decode()
         if calc_challenge != data.code_challenge:
             raise HTTPException(status_code=400, detail="Invalid PKCE code_verifier")
 
-        access_token = secrets.token_urlsafe(32)
+        # Create tokens from TokenService
+        token_service = TokenService(self.session)
+        token_pair = token_service.issue_tokens(
+            user_id=data.user_id, client_id=form_data.client_id, scope=data.scope
+        )
 
+        # Create ID Token
+        app_settings = AppSettingRepository(self.session)
+        ttl_access_token = int(app_settings.get("ttl_access_token", 1800))
         id_token_payload = IDTokenPayload(
             iss=self.settings.BASE_URL,
             sub=str(data.user_id),
-            aud=client_id,
-            exp=datetime.utcnow() + timedelta(seconds=int(ttl_access_token)),
+            aud=form_data.client_id,
+            exp=datetime.utcnow() + timedelta(seconds=ttl_access_token),
             iat=datetime.utcnow(),
         )
 
@@ -62,18 +58,14 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
             algorithm="RS256",
         )
 
-        # Generar refresh token (simple, sin JWT)
-        refresh_token = secrets.token_urlsafe(32)
-
-        response = GrantTokenResponse(
-            access_token=access_token,
-            user_id=data.user_id,
-            client_id=client_id,
+        # Create uniform response
+        return GrantTokenResponse(
+            access_token=token_pair.access_token,
             token_type="bearer",
-            expires_in=int(ttl_access_token),
+            expires_in=token_pair.expires_in,
             id_token=id_token,
-            refresh_token=refresh_token,
+            refresh_token=token_pair.refresh_token,
             scope=data.scope,
+            user_id=data.user_id,
+            client_id=form_data.client_id,
         )
-
-        return response
