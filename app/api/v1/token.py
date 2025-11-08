@@ -15,6 +15,7 @@ from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.services.grants.authorization_code_grant_handler import (
     AuthorizationCodeGrantHandler,
 )
+from app.services.grants.refresh_token_grant_handler import RefreshTokenGrantHandler
 from app.services.token_service import TokenService
 
 router = APIRouter()
@@ -22,6 +23,7 @@ router = APIRouter()
 
 grant_handlers = {
     GrantType.AUTHORIZATION_CODE: AuthorizationCodeGrantHandler,
+    GrantType.REFRESH_TOKEN: RefreshTokenGrantHandler,
 }
 
 
@@ -35,6 +37,9 @@ def token(
     refresh_token: str = Form(None),
     session: Session = Depends(get_session),
 ):
+    # Initialize TokenService
+    svc = TokenService(session)
+
     if grant_type == GrantType.AUTHORIZATION_CODE:
         handler = AuthorizationCodeGrantHandler(settings, session)
 
@@ -77,7 +82,6 @@ def token(
         return tokens
 
     elif grant_type == GrantType.REFRESH_TOKEN:
-        svc = TokenService(session)
         try:
             result = svc.refresh_with_rotation(refresh_token, client_id)
             session.commit()

@@ -35,6 +35,16 @@ class TokenService:
     def _now(self):
         return datetime.now(timezone.utc)
 
+    def create_refresh_token(self, rt: RefreshToken) -> RefreshToken:
+        """Create and store a new refresh token."""
+        new_token = self.rt_repo.create(rt)
+        return new_token
+
+    def create_access_token(self, at: AccessToken) -> AccessToken:
+        """Create and store a new access token."""
+        new_token = self.at_repo.create(at)
+        return new_token
+
     def issue_tokens(self, user_id, client_id, scope) -> TokenPair:
         now = self._now()
         access_token = secrets.token_urlsafe(32)
