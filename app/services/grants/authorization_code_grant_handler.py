@@ -1,6 +1,5 @@
 import base64
 import hashlib
-from datetime import datetime, timedelta
 
 from fastapi import HTTPException
 from jose import jwt

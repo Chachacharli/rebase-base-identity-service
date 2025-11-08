@@ -1,9 +1,10 @@
 # rebase-base-identity-service
 
-# 0.2.4 - 05/11/2025
+# 0.3.0 - 05/11/2025
 ### Summary
 Added management of roles and permissions for users.
 Implementation of health check endpoints using FastAPI. These endpoints provide basic health status information for the service. 
+Refactor the refresh token lifecycle and `TokenGrantHandler` to better handle handlers in an abstract way.
 
 ### Improvements
 - Implement CRUD for Roles, Permissions, and Role-Permission and User-Roles assignments.
@@ -11,7 +12,7 @@ Implementation of health check endpoints using FastAPI. These endpoints provide 
 - Add dependency to retrieve the current user from the token for protected endpoints.
 
 ### Corrections
-
+- Fixed refresh token lifecycle management to ensure proper handling of token expiration and renewal.
 
 ### Decrements
 

@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Session, select
-from app.utils.dates import generate_date_now
 
 from app.models.app_settings import AppSetting
+from app.utils.dates import generate_date_now
 
 
 @dataclass
