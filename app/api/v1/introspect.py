@@ -1,35 +1,21 @@
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Depends, Form
-from jose import JWTError, jwt
+from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from app.core.config import settings
+# from app.core.config import settings
 from app.core.db import get_session
-from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.domain.tokens.token_response import InstrospectResponse
+from app.repositories.access_token_repository import AccessTokenRepository
+
+# from app.repositories.refresh_token_repository import RefreshTokenRepository
 
 router = APIRouter(prefix="/v1/introspect")
 
 
 @router.post("/")
-def introspect(token: str = Form(...), session: Session = Depends(get_session)):
-    try:
-        payload = jwt.decode(
-            token,
-            open(settings.PUBLIC_KEY_PATH).read(),
-            algorithms=["RS256"],
-            options={"verify_aud": False},
-        )
-        return {"active": True, **payload}
-    except JWTError:
-        # Revisar si es refresh token en DB
-        repo = RefreshTokenRepository(session)
-        db_token = repo.get(token)
-
-        if (
-            db_token
-            and not db_token.revoked
-            and db_token.expires_at > datetime.now(timezone.utc)
-        ):
-            return {"active": True, "sub": db_token.user_id, "typ": "refresh"}
-        return {"active": False}
+def introspect(
+    token: str, session: Session = Depends(get_session)
+) -> InstrospectResponse:
+    """Introspect access token validity"""
+    at_repo = AccessTokenRepository(session)
+    introspect_response = at_repo.introspect(token)
+    return introspect_response

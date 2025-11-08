@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/v1")
+router = APIRouter()
 
 
 @router.get("/")

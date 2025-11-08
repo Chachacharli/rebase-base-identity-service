@@ -69,12 +69,19 @@ def delete_user(user_id: UUID, db: Session = Depends(get_session)):
     pass
 
 
-@router.post("/{user_id}/set_role")
+@router.post("/set_role")
 def set_user_role(
-    user_id: UUID, user_set_roles: UserSetRole, db: Session = Depends(get_session)
+    user_set_roles: UserSetRole, db: Session = Depends(get_session)
 ) -> UserWithRoles:
     user_service = UserService(db)
-    updated_user = user_service.set_user_role(
-        user_id=user_id, role_id=user_set_roles.role_id
-    )
+    updated_user = user_service.set_user_role(user_set_roles)
+    return UserWithRoles.model_validate(updated_user)
+
+
+@router.post("/remove_role")
+def remove_user_role(
+    user_set_roles: UserSetRole, db: Session = Depends(get_session)
+) -> UserWithRoles:
+    user_service = UserService(db)
+    updated_user = user_service.remove_user_role(user_set_roles)
     return UserWithRoles.model_validate(updated_user)

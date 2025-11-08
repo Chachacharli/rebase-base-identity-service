@@ -1,13 +1,15 @@
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from sqlmodel import Session
 
+from app.models.access_token import AccessToken
 from app.models.refresh_token import RefreshToken
 from app.repositories.access_token_repository import AccessTokenRepository
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.utils.dates import generate_date_now, generate_expiration
 
 
 @dataclass
@@ -32,7 +34,17 @@ class TokenService:
         self.app_settings_repo = AppSettingRepository(session)
 
     def _now(self):
-        return datetime.now(timezone.utc)
+        return generate_date_now()
+
+    def create_refresh_token(self, rt: RefreshToken) -> RefreshToken:
+        """Create and store a new refresh token."""
+        new_token = self.rt_repo.create(rt)
+        return new_token
+
+    def create_access_token(self, at: AccessToken) -> AccessToken:
+        """Create and store a new access token."""
+        new_token = self.at_repo.create(at)
+        return new_token
 
     def issue_tokens(self, user_id, client_id, scope) -> TokenPair:
         now = self._now()
@@ -41,15 +53,6 @@ class TokenService:
 
         ttl_access = int(self.app_settings_repo.get("ttl_access_token", 1800))
         ttl_refresh = int(self.app_settings_repo.get("ttl_refresh_token", 604800))
-
-        # Access token
-        self.at_repo.create(
-            token=access_token,
-            user_id=user_id,
-            client_id=client_id,
-            scope=scope,
-            expires_at=now + timedelta(seconds=ttl_access),
-        )
 
         rt = RefreshToken(
             token=refresh_token,
@@ -61,8 +64,22 @@ class TokenService:
         )
 
         # Refresh token
-        self.rt_repo.create(rt)
+        new_rt = self.rt_repo.create(rt)
 
+        at_token = AccessToken(
+            token=access_token,
+            user_id=user_id,
+            client_id=client_id,
+            scope=scope,
+            expires_at=now + timedelta(seconds=ttl_access),
+            revoked=False,
+            refresh_token_id=new_rt.id,
+        )
+
+        # Access token
+        self.at_repo.create(at_token)
+
+        # TODO: Return additional info (token type, scope, etc)
         return TokenPair(
             access_token=access_token,
             refresh_token=refresh_token,
@@ -94,8 +111,10 @@ class TokenService:
             raise ValueError("Token revoked")
 
         # Si expiró
-        if rt.expires_at < now:
-            raise ValueError("Token expired")
+        # TODO: Fix `TypeError: can't compare offset-naive and offset-aware datetimes`
+        exp = rt.expires_at.replace(tzinfo=timezone.utc)
+        if exp < now:
+            raise ValueError("Your token has been expired")
 
         # Validar que el client_id coincide
         if str(rt.client_id) != str(client_id):
@@ -103,27 +122,41 @@ class TokenService:
 
         # ROTACIÓN: crear nuevo refresh token y marcar reemplazo
         new_refresh_token_str = secrets.token_urlsafe(48)
-        new_rt = self.rt_repo.create(
+        new_rt = RefreshToken(
             token=new_refresh_token_str,
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + timedelta(seconds=ttl_refresh),
+            expires_at=generate_expiration(ttl_refresh),
+            revoked=False,
+            created_at=now,
+            parent_id=rt.id,
+            replaced_by=None,
         )
-        # crear nuevo access token ligado al new_rt
+
+        rt_repsonse = self.rt_repo.create(new_rt)
+
+        # crear nuevo access token ligado al rt_repsonse
         new_access_token_str = secrets.token_urlsafe(32)
-        self.at_repo.create(
+
+        new_at = AccessToken(
             token=new_access_token_str,
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + timedelta(seconds=ttl_access),
-            refresh_token_id=new_rt.id,
+            expires_at=generate_expiration(ttl_access),
+            refresh_token_id=rt_repsonse.id,
+            revoked=False,
         )
+
+        # Revoke old token and generate new one
+        self.at_repo.revoke_by_refresh(rt.id)
+        self.at_repo.create(new_at)
 
         # Marcar el antiguo como reemplazado (revocar)
         self.rt_repo.mark_replaced(rt, new_rt)
 
+        # TODO: Return additional info (token type, scope, etc)
         return TokenPair(
             access_token=new_access_token_str,
             refresh_token=new_refresh_token_str,
