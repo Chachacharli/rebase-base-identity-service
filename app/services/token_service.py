@@ -1,6 +1,6 @@
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from sqlmodel import Session
 
@@ -9,6 +9,7 @@ from app.models.refresh_token import RefreshToken
 from app.repositories.access_token_repository import AccessTokenRepository
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.utils.dates import generate_date_now, generate_expiration
 
 
 @dataclass
@@ -33,7 +34,7 @@ class TokenService:
         self.app_settings_repo = AppSettingRepository(session)
 
     def _now(self):
-        return datetime.now(timezone.utc)
+        return generate_date_now()
 
     def create_refresh_token(self, rt: RefreshToken) -> RefreshToken:
         """Create and store a new refresh token."""
@@ -111,8 +112,9 @@ class TokenService:
 
         # Si expiró
         # TODO: Fix `TypeError: can't compare offset-naive and offset-aware datetimes`
-        if False:
-            raise ValueError("Token expired")
+        exp = rt.expires_at.replace(tzinfo=timezone.utc)
+        if exp < now:
+            raise ValueError("Your token has been expired")
 
         # Validar que el client_id coincide
         if str(rt.client_id) != str(client_id):
@@ -125,7 +127,7 @@ class TokenService:
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + timedelta(seconds=ttl_refresh),
+            expires_at=generate_expiration(ttl_refresh),
             revoked=False,
             created_at=now,
             parent_id=rt.id,
@@ -142,7 +144,7 @@ class TokenService:
             user_id=rt.user_id,
             client_id=rt.client_id,
             scope=rt.scope,
-            expires_at=now + timedelta(seconds=ttl_access),
+            expires_at=generate_expiration(ttl_access),
             refresh_token_id=rt_repsonse.id,
             revoked=False,
         )

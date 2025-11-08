@@ -1,6 +1,5 @@
-from fastapi import HTTPException
-
 from app.domain.tokens.token_response import FormTokenRequest, GrantTokenResponse
+from app.exceptions.bussiness_exceptions import TokenExpiredException
 from app.services.grants.token_grant_handler import TokenGrantHandler
 from app.services.token_service import TokenService
 
@@ -13,8 +12,13 @@ class RefreshTokenGrantHandler(TokenGrantHandler):
             token_pair = token_service.refresh_with_rotation(
                 refresh_token_str=form_data.refresh_token, client_id=form_data.client_id
             )
-        except ValueError:
-            raise HTTPException(status_code=400, detail="invalid_grant")
+        except ValueError as e:
+            raise TokenExpiredException(
+                details={
+                    "error": "invalid_grant",
+                    "error_description": str(e.args[0]),
+                }
+            )
 
         # Aquí podrías regenerar el ID token (opcional)
         return GrantTokenResponse(

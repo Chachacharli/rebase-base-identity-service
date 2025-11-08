@@ -14,6 +14,7 @@ from app.domain.tokens.token_response import GrantTokenResponse
 from app.repositories.app_settings_repository import AppSettingRepository
 from app.services.grants.token_grant_handler import TokenGrantHandler
 from app.services.token_service import TokenService
+from app.utils.dates import generate_date_now, generate_expiration
 
 
 class AuthorizationCodeGrantHandler(TokenGrantHandler):
@@ -43,13 +44,13 @@ class AuthorizationCodeGrantHandler(TokenGrantHandler):
 
         # Create ID Token
         app_settings = AppSettingRepository(self.session)
-        ttl_access_token = int(app_settings.get("ttl_access_token", 1800))
+        ttl_access_token = int(app_settings.get("ttl_access_token", 30))
         id_token_payload = IDTokenPayload(
             iss=self.settings.BASE_URL,
             sub=str(data.user_id),
             aud=form_data.client_id,
-            exp=datetime.utcnow() + timedelta(seconds=ttl_access_token),
-            iat=datetime.utcnow(),
+            exp=generate_expiration(ttl_access_token),
+            iat=generate_date_now(),
         )
 
         id_token = jwt.encode(

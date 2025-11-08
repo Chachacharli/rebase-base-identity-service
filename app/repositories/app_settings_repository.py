@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Session, select
+from app.utils.dates import generate_date_now
 
 from app.models.app_settings import AppSetting
 
@@ -27,7 +28,7 @@ class AppSettingRepository:
         cached = self._cache.get(key)
         if (
             cached
-            and (datetime.utcnow() - cached.time).total_seconds()
+            and (generate_date_now() - cached.time).total_seconds()
             < self._cache_ttl_seconds
         ):
             return cached.value
@@ -40,7 +41,7 @@ class AppSettingRepository:
 
         value = setting.value
         # store in cache
-        self._cache[key] = CacheEntry(value=value, time=datetime.utcnow())
+        self._cache[key] = CacheEntry(value=value, time=generate_date_now())
         return value
 
     def set(
@@ -57,7 +58,7 @@ class AppSettingRepository:
         else:
             setting.value = value
             setting.description = description or setting.description
-            setting.updated_at = datetime.utcnow()
+            setting.updated_at = generate_date_now()
 
         self.session.add(setting)
         self.session.commit()
