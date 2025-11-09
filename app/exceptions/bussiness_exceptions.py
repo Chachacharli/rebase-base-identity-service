@@ -42,3 +42,13 @@ class EmailAlreadyExistsException(AppException):
             http_status=status.HTTP_400_BAD_REQUEST,
             details=details,
         )
+
+
+class InvalidUsernameException(AppException):
+    def __init__(self, message="Invalid username", details=None):
+        super().__init__(
+            message=message,
+            code=ExceptionCode.VALIDATION_ERROR,
+            http_status=status.HTTP_400_BAD_REQUEST,
+            details=details,
+        )
