@@ -19,7 +19,8 @@ router = APIRouter(prefix="/v1/user")
 
 
 @router.post(
-    "/", response_model=UserRead, dependencies=[Depends(require_role("admin"))]
+    "/",
+    response_model=UserRead,
 )
 def create_user(user: UserCreate, db: Session = Depends(get_session)):
     user_service = UserService(db)

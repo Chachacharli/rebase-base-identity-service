@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.core.config import settings
-from app.core.security import get_jwk
+from app.core.jwk import get_jwk
 
 router = APIRouter(prefix="/v1/oidc")
 
