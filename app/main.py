@@ -29,12 +29,12 @@ async def lifespan(app: FastAPI):
     print("Starting app...")
     # Init database for the first time
     # TODO: Falta agregar migraciones con Alembic
-    # init_db()
+    init_db()
 
     # TODO: Agregar forma de acoplar REDIs/cache en vez de guardar tokens en bd
 
     # Init cleanup service to remove expired tokens periodically
-    # asyncio.create_task(cleanup_service.start())
+    asyncio.create_task(cleanup_service.start())
 
     yield
     # Aquí podrías poner lógica de cierre (shutdown)

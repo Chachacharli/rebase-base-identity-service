@@ -2,6 +2,7 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
+from app.components.user.user_manager import UserManager
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserSetRole
@@ -18,12 +19,11 @@ class UserService:
         return users
 
     def create_user(self, username: str, email: str, password: str) -> User:
-        hashed_pw = pbkdf2_sha256.hash(password)
-        user = User(username=username, email=email, password=hashed_pw)
-        self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
-        return user
+        user_repository = UserRepository(self.session)
+        user_manager = UserManager(user_repository)
+
+        created_user = user_manager.create_user(username, password, email)
+        return created_user
 
     def authenticate_user(self, username: str, password: str) -> User | None:
         statement = select(User).where(User.username == username)
