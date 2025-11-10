@@ -52,3 +52,23 @@ class InvalidUsernameException(AppException):
             http_status=status.HTTP_400_BAD_REQUEST,
             details=details,
         )
+
+
+class RequiredRoleException(AppException):
+    def __init__(self, required_role, details=None):
+        super().__init__(
+            message=f"Role '{required_role}' required",
+            code=ExceptionCode.ROLE_REQUIRED,
+            http_status=status.HTTP_403_FORBIDDEN,
+            details=details,
+        )
+
+
+class RequiredPermissionException(AppException):
+    def __init__(self, required_permission, details=None):
+        super().__init__(
+            message=f"Permission '{required_permission}' required",
+            code=ExceptionCode.PERMISSION_REQUIRED,
+            http_status=status.HTTP_403_FORBIDDEN,
+            details=details,
+        )

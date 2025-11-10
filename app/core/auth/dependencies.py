@@ -3,6 +3,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
 
 from app.core.db import get_session
+from app.exceptions.bussiness_exceptions import (
+    RequiredPermissionException,
+    RequiredRoleException,
+)
 from app.exceptions.http_exceptions import UnauthorizedException
 from app.models.user import User
 from app.repositories.access_token_repository import AccessTokenRepository
@@ -33,10 +37,7 @@ def require_role(required_role: str) -> User:
     def wrapper(user: User = Depends(get_current_user)):
         roles = [role.name for role in user.roles]
         if required_role not in roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Role '{required_role}' required",
-            )
+            raise RequiredRoleException(required_role)
         return user
 
     return wrapper
@@ -48,10 +49,7 @@ def require_roles(required_roles: list[str]) -> User:
     def wrapper(user: User = Depends(get_current_user)):
         roles = [role.name for role in user.roles]
         if not any(role in roles for role in required_roles):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"One of the roles '{', '.join(required_roles)}' required",
-            )
+            raise RequiredRoleException(required_roles)
         return user
 
     return wrapper
@@ -63,10 +61,7 @@ def require_permission(required_permission: str) -> User:
     def wrapper(user: User = Depends(get_current_user)):
         permissions = [perm.name for role in user.roles for perm in role.permissions]
         if required_permission not in permissions:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Permission '{required_permission}' required",
-            )
+            raise RequiredPermissionException(required_permission)
         return user
 
     return wrapper
