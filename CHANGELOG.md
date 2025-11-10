@@ -1,5 +1,34 @@
 # rebase-base-identity-service
 
+## 0.3.0 - 05/11/2025
+
+### Summary
+Added management of roles and permissions for users.
+Implementation of health check endpoints using FastAPI. These endpoints provide basic health status information for the service. 
+Refactor the refresh token lifecycle and `TokenGrantHandler` to better handle handlers in an abstract way.
+Refactored endpoints to use service layers for roles and permissions, improving separation of concerns and maintainability.
+Enhanced username and password validation to return missing rules as a dictionary in custom exceptions.
+Adjusted role endpoints to avoid redundant permission parameters.
+Added custom validation logic for username and password during user creation.
+Implement better readme documentation for users, roles, and permissions management system.
+
+### Improvements
+- Implement CRUD for Roles, Permissions, and Role-Permission and User-Roles assignments.
+- Added health check endpoints for monitoring service status, including a root health endpoint and a detailed health status endpoint. (Basic structure for future health checks like database connectivity, external service status, etc.)
+- Add dependency to retrieve the current user from the token for protected endpoints.
+- Refactored role and permission endpoints to use `RoleService` and `PermissionService` instead of direct repository access.
+- Username and password validation now returns a dict with missing rules in custom exceptions.
+- Role permission endpoints now receive `role_id` only in the request body, not in the route.
+- Added custom validation for username and password in user creation.
+
+### Corrections
+- Fixed refresh token lifecycle management to ensure proper handling of token expiration and renewal.
+- Fixed typing in role and permission services.
+- Fixed usage of custom exceptions in username and password validation.
+
+### Decrements
+
+
 ## 0.2.3 - 29/10/2025
 
 ### Summary

@@ -1,16 +1,27 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from app.core.auth.dependencies import require_role
 from app.core.db import get_session
-from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    UserCreate,
+    UserRead,
+    UserSetRole,
+    UserUpdate,
+    UserWithRoles,
+)
 from app.services.user_service import UserService
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/user")
 
 
-@router.post("/user", response_model=UserRead)
+@router.post(
+    "/",
+    response_model=UserRead,
+)
 def create_user(user: UserCreate, db: Session = Depends(get_session)):
     user_service = UserService(db)
     created_user = user_service.create_user(
@@ -22,3 +33,56 @@ def create_user(user: UserCreate, db: Session = Depends(get_session)):
     )
 
     return new_user
+
+
+@router.get("/{user_id}", response_model=UserWithRoles)
+def get_user(user_id: UUID, db: Session = Depends(get_session)) -> UserWithRoles:
+    user_service = UserService(db)
+    user = user_service.get_user_by_id(user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserWithRoles.model_validate(user)
+
+
+@router.get(
+    "/",
+    response_model=list[UserRead],
+    dependencies=[Depends(require_role("admin"))],
+)
+def list_users(db: Session = Depends(get_session)):
+    user_service = UserService(db)
+    users = user_service.get_all_users()
+    return [UserRead.model_validate(user) for user in users]
+
+
+@router.put("/{user_id}", response_model=UserRead)
+def update_user(
+    user_id: UUID, user_update: UserUpdate, db: Session = Depends(get_session)
+):
+    # TODO: implement update logic
+    pass
+
+
+@router.delete("/{user_id}")
+def delete_user(user_id: UUID, db: Session = Depends(get_session)):
+    # TODO: implemente soft delete logic
+    pass
+
+
+@router.post("/set_role")
+def set_user_role(
+    user_set_roles: UserSetRole, db: Session = Depends(get_session)
+) -> UserWithRoles:
+    user_service = UserService(db)
+    updated_user = user_service.set_user_role(user_set_roles)
+    return UserWithRoles.model_validate(updated_user)
+
+
+@router.post("/remove_role")
+def remove_user_role(
+    user_set_roles: UserSetRole, db: Session = Depends(get_session)
+) -> UserWithRoles:
+    user_service = UserService(db)
+    updated_user = user_service.remove_user_role(user_set_roles)
+    return UserWithRoles.model_validate(updated_user)

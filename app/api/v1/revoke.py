@@ -4,13 +4,13 @@ from sqlmodel import Session
 from app.core.db import get_session
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 
-router = APIRouter()
+router = APIRouter(prefix="/v1/revoke")
 
 # Aquí deberías tener un "store" que permita invalidar tokens (lista negra o estado en BD)
 revoked_tokens = set()
 
 
-@router.post("/revoke")
+@router.post("/")
 def revoke(
     token: str = Form(...),
     token_type_hint: str = Form(None),
