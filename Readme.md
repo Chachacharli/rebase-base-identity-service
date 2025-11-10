@@ -1,24 +1,137 @@
 # REBASE BASE IDENTITY SERVICE
 
-Este proyecto consiste en el desarrollo de un **Identity Provider (IdP)** propio que actuará como el **servicio central de autenticación y autorización** para una suite de aplicaciones multi-tenant. El sistema estará basado en los estándares modernos de identidad, principalmente **OAuth 2.0** y **OpenID Connect (OIDC)**, con soporte de **PKCE (Proof Key for Code Exchange)** para mayor seguridad en aplicaciones públicas (ej. SPAs, móviles).
+## What is an Identity Provider (IdP)?
 
+An **Identity Provider (IdP)** is a system that manages user identities and provides authentication and authorization services to applications. It acts as a central authority for verifying user credentials and issuing tokens that allow users to access protected resources across multiple applications.
 
-## To run the app:
+## About this IdP
+
+This project implements a **multi-tenant Identity Provider** based on modern standards:
+
+- **OAuth 2.0**: Secure authorization for APIs and applications.
+- **OpenID Connect (OIDC)**: Authentication layer on top of OAuth 2.0.
+- **PKCE (Proof Key for Code Exchange)**: Enhanced security for public clients (SPAs, mobile apps).
+
+The IdP is designed to support multiple tenants, allowing different organizations or groups to manage their own users, roles, and permissions within the same system.
+
+---
+
+## How to run the app
+
+You can start the development server using the CLI:
+
 ```bash
 typer cli.py run
 ```
 
-or 
+Or directly with FastAPI:
+
 ```bash
 fastapi dev app/main.py
 ```
 
-## Upgrade requirements:
+---
+
+## Requirements management
+
+Upgrade requirements:
 ```bash
 pip freeze > requirements.txt
 ```
 
-## Download requirements:
+Install requirements:
 ```bash
 pip install -r requirements.txt
 ```
+
+---
+
+## System Overview: Users, Roles, and Permissions
+
+The IdP uses a flexible system to manage access control:
+
+| Entity      | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| **User**    | Represents an individual account. Each user can have multiple roles.        |
+| **Role**    | A named collection of permissions. Roles are assigned to users.             |
+| **Permission** | Represents a specific action or access right. Permissions are assigned to roles. |
+
+### Relationships
+
+- **Users ↔ Roles**: Many-to-many. A user can have multiple roles; a role can be assigned to multiple users.
+- **Roles ↔ Permissions**: Many-to-many. A role can have multiple permissions; a permission can be assigned to multiple roles.
+
+### Example Tables
+
+#### Users
+
+| id   | username | email           | ... |
+|------|---------|-----------------|-----|
+| 1    | alice   | alice@tenant.com| ... |
+| 2    | bob     | bob@tenant.com  | ... |
+
+#### Roles
+
+| id   | name      | description         |
+|------|-----------|---------------------|
+| 1    | admin     | Full access         |
+| 2    | editor    | Can edit resources  |
+
+#### Permissions
+
+| id   | name         | description              |
+|------|--------------|-------------------------|
+| 1    | read         | Read resources          |
+| 2    | write        | Write resources         |
+| 3    | delete       | Delete resources        |
+
+#### User-Roles
+
+| user_id | role_id |
+|---------|---------|
+| 1       | 1       |
+| 2       | 2       |
+
+#### Role-Permissions
+
+| role_id | permission_id |
+|---------|--------------|
+| 1       | 1            |
+| 1       | 2            |
+| 1       | 3            |
+| 2       | 1            |
+| 2       | 2            |
+
+---
+
+## How Access Control Works
+
+1. **User Authentication**: Users authenticate via OAuth 2.0/OIDC flows. PKCE is used for public clients.
+2. **Role Assignment**: Each user is assigned one or more roles.
+3. **Permission Assignment**: Each role is assigned one or more permissions.
+4. **Authorization**: When accessing a protected endpoint, the system checks if the user's roles include the required permission.
+
+### Example Flow
+
+- Alice logs in and receives a token.
+- Alice's token contains her roles (e.g., `admin`).
+- When Alice tries to delete a resource, the system checks if her roles include the `delete` permission.
+- If yes, access is granted; otherwise, access is denied.
+
+---
+
+## Multi-Tenant Support
+
+Each tenant can manage its own users, roles, and permissions independently, ensuring isolation and flexibility for organizations using the same IdP. (Pending implementation details)
+
+---
+
+## API Endpoints
+
+- **User Management**: Create, update, assign roles.
+- **Role Management**: Create, update, assign permissions.
+- **Permission Management**: Create, update.
+- **Authentication**: OAuth 2.0/OIDC flows with PKCE.
+
+---
+
