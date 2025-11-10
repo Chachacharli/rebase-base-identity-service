@@ -20,11 +20,12 @@ class UserComponent:
         )
 
     def create_user(self, username: str, password: str, email: str) -> User:
-        if self.username_validator.validate(username):
+        # Validate username
+        if not self.username_validator.validate(username):
             raise ValueError("Username does not meet the required criteria.")
 
         # Validate password
-        if self.password_validator.validate(password):
+        if not self.password_validator.validate(password):
             raise ValueError("Password does not meet the required criteria.")
 
         password_hash = PasswordHasher()
