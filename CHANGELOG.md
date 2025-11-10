@@ -10,6 +10,7 @@ Refactored endpoints to use service layers for roles and permissions, improving 
 Enhanced username and password validation to return missing rules as a dictionary in custom exceptions.
 Adjusted role endpoints to avoid redundant permission parameters.
 Added custom validation logic for username and password during user creation.
+Implement better readme documentation for users, roles, and permissions management system.
 
 ### Improvements
 - Implement CRUD for Roles, Permissions, and Role-Permission and User-Roles assignments.
