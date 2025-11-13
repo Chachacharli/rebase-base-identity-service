@@ -1,5 +1,18 @@
 # rebase-base-identity-service
 
+# 0.4.0 - 12/11/2025
+## Summary 
+Implemented an endpoint to retrieve user information based on the user ID extracted from the access token. This endpoint provides essential user details such as user ID, username, email, full name (soon), and active status.
+
+## Improvements
+- Added `/v1/userinfo` endpoint to fetch user information using the user ID from the access token.
+- Created `UserInfoSchema` to structure the user information response.
+
+### Corrections
+
+### Decrements
+
+
 ## 0.3.0 - 05/11/2025
 
 ### Summary
