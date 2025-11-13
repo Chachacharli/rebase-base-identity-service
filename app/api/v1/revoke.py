@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Form
 from sqlmodel import Session
 
 from app.core.db import get_session
-from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.services.token_service import TokenService
 
 router = APIRouter(prefix="/v1/revoke")

@@ -16,6 +16,11 @@ class UserRepository:
     def get_by_email(self, email: str):
         return self.session.exec(select(User).where(User.email == email)).first()
 
+    def get_by_id(self, user_id: str) -> User | None:
+        statement = select(User).where(User.id == user_id)
+        result = self.session.exec(statement).first()
+        return result
+
     def create(self, user: User):
         self.session.add(user)
         self.session.commit()

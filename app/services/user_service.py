@@ -6,11 +6,13 @@ from app.components.user.user_manager import UserManager
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserSetRole
+from app.schemas.user_info_schema import UserInfoSchema
 
 
 class UserService:
     def __init__(self, session: Session):
         self.session = session
+        self.user_repo = UserRepository(session)
 
     def get_all_users(self) -> list[User]:
         # TODO: Pagination
@@ -54,3 +56,14 @@ class UserService:
         user_set_role = UserSetRole(id=user_role.id, role_id=user_role.role_id)
         updated_user = user_repo.remove_role(user_set_role)
         return updated_user
+
+    def get_userinfo(self, user_id: str) -> UserInfoSchema | None:
+        user = self.user_repo.get_by_id(user_id)
+        if not user:
+            return None
+        return UserInfoSchema(
+            sub=str(user.id),
+            username=user.username,
+            email=user.email,
+            email_verified=user.email_verified,
+        )
