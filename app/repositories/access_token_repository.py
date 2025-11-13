@@ -28,6 +28,7 @@ class AccessTokenRepository:
         for at in self.session.exec(q).all():
             at.revoked = True
             self.session.add(at)
+        self.session.commit()
 
     def revoke(self, access_token: AccessToken):
         """Revoke access token"""

@@ -163,14 +163,16 @@ class TokenService:
             expires_in=ttl_access,
         )
 
-    def revoke_token(self, token_str: str):
+    def revoke_token(self, token_str: str) -> None:
         """Revoke token opaco (access o refresh)."""
         at = self.at_repo.get(token_str)
+        rt_id = None
+        rt = None
         if at:
             self.at_repo.revoke(at)
-            return
+            rt_id = at.refresh_token_id
+            rt = self.rt_repo.get_by_id(str(rt_id))
 
-        rt = self.rt_repo.get(token_str)
         if rt:
             # revocar cadena (refresh y descendientes) y sus access tokens
             self.rt_repo.revoke_chain(rt)
