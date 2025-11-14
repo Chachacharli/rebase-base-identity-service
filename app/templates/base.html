@@ -12,11 +12,7 @@
 
     <style>
       /* Small helpers for centering inside card content */
-      .form-row { margin-bottom: 1rem; }
-      label { display: block; margin-bottom: .35rem; font-size: .95rem; color: inherit; }
-      .muted { color: rgba(0,0,0,0.6); font-size: .9rem; }
-      /* Dark-mode adjustments if you still use class dark on html */
-      html.dark body { background: var(--color-bg); color: var(--color-text); }
+
     </style>
 </head>
 <body>
@@ -24,7 +20,7 @@
         <div class="card">
             {% block content %}{% endblock %}
             <div style="margin-top: 1.25rem; text-align:center; font-size: 0.85rem; opacity: 0.75;">
-                © {{ year|default(2025) }} Rebase — Mensaje automático.
+                © {{ year|default(2025) }} Rebase 
             </div>
         </div>
     </div>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #F3F4F6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #1F2937; /* gris oscuro */
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #4B5563;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #a16ae2;
+            color: #ffffff !important;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background: #7638b8;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 32px;
+            line-height: 1.4;
+        }
+
+        .highlight {
+            color: #7C3AED; /* morado acento */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% block content %}{% endblock %}
+        <div class="footer">
+            © {{ year }} Tu Empresa — Este correo es automático.<br>
+            Por favor no respondas a este mensaje.
+        </div>
+    </div>
+</body>
+</html>

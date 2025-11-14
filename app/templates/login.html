@@ -9,7 +9,7 @@
     <div class="message-error" role="alert">{{ error }}</div>
   {% endif %}
 
-  <form action="/authorize" method="post" novalidate>
+  <form class="form-content" action="/authorize" method="post" novalidate>
     <div class="form-row">
       <label for="username">Username o Email</label>
       <input id="username" name="username" type="text" class="input" required value="{{ username|default('') }}">

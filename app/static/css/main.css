@@ -24,3 +24,19 @@ html, body {
     font-weight: 600;
     margin-bottom: 1rem;
 }
+
+.form-row {
+     margin-bottom: 1rem;
+}
+
+label {
+     display: block;
+     margin-bottom: .35rem;
+     font-size: .95rem;
+     color: inherit;
+}
+
+.muted {
+     color: var(--color-muted);
+     font-size: .9rem;
+}

@@ -1,25 +1,40 @@
 :root {
     /* Colors */
+
+    --color-royal-purple-50: #faf6fe;
+    --color-royal-purple-100: #f2ebfc;
+    --color-royal-purple-200: #e7dafa;
+    --color-royal-purple-300: #d5bdf5;
+    --color-royal-purple-400: #bc93ed;
+    --color-royal-purple-500: #a16ae2;
+    --color-royal-purple-600: #8b4ad3;
+    --color-royal-purple-700: #7638b8;
+    --color-royal-purple-800: #663399;
+    --color-royal-purple-900: #522a79;
+    --color-royal-purple-950: #371358;
+
     --color-bg: #f9fafb;
-    --color-bg-dark: #111827;
+    --color-bg-dark: #1f1f2e;
 
     --color-card-bg: #ffffff;
-    --color-card-bg-dark: #1f2937;
+    --color-card-bg-dark: #27293d;
 
     --color-text: #1f2937;
     --color-text-dark: #f9fafb;
 
-    --color-primary: #6d28d9; /* Purple */
-    --color-primary-hover: #5b21b6;
+    --color-primary: var(--color-royal-purple-500);
+    --color-primary-hover: var(--color-royal-purple-700);
 
     --color-border: #d1d5db;
     --color-border-dark: #374151;
 
     --color-input-bg: #ffffff;
-    --color-input-bg-dark: #111827;
+    --color-input-bg-dark: #3b3b4f;
 
     --color-error: #dc2626;
     --color-success: #16a34a;
+
+    --color-muted: rgba(237, 237, 237, 0.6);
 
     /* Sizing */
     --radius: 0.75rem;
