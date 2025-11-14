@@ -3,6 +3,7 @@ from email.message import EmailMessage
 from enum import Enum
 
 from app.core.config import MailSettings, mail_settings, settings
+from jinja2 import Environment, FileSystemLoader
 
 
 class EmailType(Enum):
@@ -26,6 +27,9 @@ class MailService:
         self.smtp_port = mail_settings.SMTP_PORT
         self.smtp_username = mail_settings.SMTP_USERNAME
         self.smtp_password = mail_settings.SMTP_PASSWORD
+        self.template_src = Environment(
+            loader=FileSystemLoader("app/templates/emails"), autoescape=True
+        )
 
     def send_email(self, to_email: str, subject: str, html_content: str):
         """Método genérico para enviar correos HTML."""
@@ -50,16 +54,7 @@ class MailService:
     def send_reset_password_email(self, to_email: str, token: str):
         link = EmailUrls.reset_password_url(token)
 
-        html = f"""
-        <html>
-        <body>
-            <h2>Recupera tu contraseña</h2>
-            <p>Da clic en el siguiente enlace para restablecer tu contraseña:</p>
-            <p><a href="{link}">Restablecer contraseña</a></p>
-            <p>Si no solicitaste este correo, ignóralo.</p>
-        </body>
-        </html>
-        """
+        html = self.template_src.get_template("reset_password.html").render(link=link)
 
         self.send_email(
             to_email=to_email, subject="Restablecer contraseña", html_content=html
@@ -68,15 +63,7 @@ class MailService:
     def send_verification_email(self, to_email: str, token: str):
         link = EmailUrls.verification_url(token)
 
-        html = f"""
-        <html>
-        <body>
-            <h2>Verifica tu correo electrónico</h2>
-            <p>Da clic en el enlace para confirmar tu cuenta:</p>
-            <p><a href="{link}">Verificar correo</a></p>
-        </body>
-        </html>
-        """
+        html = self.template_src.get_template("verify_email.html").render(link=link)
 
         self.send_email(
             to_email=to_email, subject="Verificación de correo", html_content=html
