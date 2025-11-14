@@ -49,3 +49,9 @@ class UserComponent:
             raise EmailAlreadyExistsException("Email already exists.")
 
         return True
+
+    def validate_password(self, password: str) -> bool:
+        return self.password_validator.validate(password)
+
+    def passwords_match(self, password: str, confirm_password: str) -> bool:
+        return password == confirm_password

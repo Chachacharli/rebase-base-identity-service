@@ -166,4 +166,7 @@ def reset_password_submit(
             {"request": request, "error": "Invalid or expired token."},
         )
 
+    user_service = UserService(session)
+    response = user_service.reset_password(new_password=password, token=token)
+
     return RedirectResponse("/login", status_code=303)

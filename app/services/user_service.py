@@ -28,22 +28,19 @@ class UserService:
         return created_user
 
     def authenticate_user(self, username: str, password: str) -> User | None:
-        statement = select(User).where(User.username == username)
-        user = self.session.exec(statement).first()
+        user = self.user_repo.get_by_username(username)
         if user and pbkdf2_sha256.verify(password, user.password):
             return user
         return None
 
-    def reset_password(self, user: User, new_password: str) -> None:
-        hashed_pw = pbkdf2_sha256.hash(new_password)
-        user.password = hashed_pw
-        self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+    def reset_password(self, new_password: str, token: str) -> None:
+        user_manager = UserManager(self.user_repo)
+        response = user_manager.reset_password(new_password, token)
+        return response
 
     def get_user_by_id(self, user_id: str) -> User | None:
-        query = select(User).where(User.id == user_id).options(selectinload(User.roles))
-        return self.session.exec(query).first()
+        user = self.user_repo.get_by_id(user_id)
+        return user
 
     def set_user_role(self, user_role: UserSetRole) -> User | None:
         user_repo = UserRepository(self.session)

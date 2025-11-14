@@ -48,7 +48,6 @@ def get_user(user_id: UUID, db: Session = Depends(get_session)) -> UserWithRoles
 @router.get(
     "/",
     response_model=list[UserRead],
-    dependencies=[Depends(require_role("admin"))],
 )
 def list_users(db: Session = Depends(get_session)):
     user_service = UserService(db)
