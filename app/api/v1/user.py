@@ -91,6 +91,8 @@ def remove_user_role(
 def test_endpoint(db: Session = Depends(get_session)):
     password_service = PasswordService("secret")
     token = password_service.generate_token("test@example.com")
-    token_valid = password_service.verify_token(token)
+    token_valid = password_service.verify_token(
+        "InRjY2FfZWRuc0Bob3RtYWlsLmNvbSI.aRegog.ckrDzqd_zsvRCwYUkf7Cf2miMow"
+    )
 
     return {"token": token, "token_valid": token_valid}

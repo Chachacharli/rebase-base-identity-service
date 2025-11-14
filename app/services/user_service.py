@@ -33,7 +33,7 @@ class UserService:
             return user
         return None
 
-    def reset_password(self, new_password: str, token: str) -> None:
+    def reset_password(self, new_password: str, token: str) -> User:
         user_manager = UserManager(self.user_repo)
         response = user_manager.reset_password(new_password, token)
         return response
@@ -53,6 +53,11 @@ class UserService:
         user_set_role = UserSetRole(id=user_role.id, role_id=user_role.role_id)
         updated_user = user_repo.remove_role(user_set_role)
         return updated_user
+
+    def send_mail_reset_password(self, email: str) -> bool:
+        user_manager = UserManager(self.user_repo)
+        response = user_manager.send_mail_reset_password(email)
+        return response
 
     def get_userinfo(self, user_id: str) -> UserInfoSchema | None:
         user = self.user_repo.get_by_id(user_id)

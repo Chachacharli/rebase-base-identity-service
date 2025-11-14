@@ -128,14 +128,26 @@ def process_forgot_password(
         )
 
     # Aquí se generaría y enviaría el enlace de restablecimiento de contraseña
-    # Por simplicidad, solo mostramos un mensaje
-    return templates.TemplateResponse(
-        "forgot_password.html",
-        {
-            "request": request,
-            "message": "A reset link has been sent.",
-        },
-    )
+
+    response = user_service.send_mail_reset_password(email)
+
+    if not response:
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "error": "There was an error sending the reset email. Please try again later.",
+            },
+        )
+    else:
+        # Por simplicidad, solo mostramos un mensaje
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "message": "A reset link has been sent.",
+            },
+        )
 
 
 @router.get("/reset-password", response_class=HTMLResponse)
@@ -159,15 +171,13 @@ def reset_password_submit(
     confirm_password: str = Form(...),
     session: Session = Depends(get_session),
 ):
-    email = False
-    if not email:
+    user_service = UserService(session)
+    response = user_service.reset_password(new_password=password, token=token)
+
+    if not response:
         return templates.TemplateResponse(
             "reset_password.html",
             {"request": request, "error": "Invalid or expired token."},
         )
-
-    user_service = UserService(session)
-    # Es necesario obtener el usuario por email o por el token
-    response = user_service.reset_password(new_password=password, token=token)
 
     return RedirectResponse("/login", status_code=303)

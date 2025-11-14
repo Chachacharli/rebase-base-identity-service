@@ -21,4 +21,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = f"postgresql+psycopg2://{os.getenv('DATA_BASE_USER')}:{os.getenv('DATA_BASE_PASSWORD')}@{os.getenv('DATA_BASE_HOST')}:{os.getenv('DATA_BASE_PORT')}/{os.getenv('DATA_BASE_NAME')}"
 
 
+# Mail settings
+class MailSettings(BaseSettings):
+    SMTP_SERVER: str = os.getenv("SMTP_SERVER")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT"))
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD")
+
+
 settings = Settings()
+mail_settings = MailSettings()

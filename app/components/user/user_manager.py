@@ -1,6 +1,7 @@
 from app.components.user.user_component import UserComponent
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.services.mail_service import MailService
 from app.services.password_service import PasswordService
 
 
@@ -25,12 +26,16 @@ class UserManager:
         # Logic to send a verification email
         pass
 
-    def send_mail_reset_password(self, email: str):
-        # Logic to send a password reset email
+    def send_mail_reset_password(self, email: str) -> bool:
         token = self.password_service.generate_token(email)
-        pass
+        mail_service = MailService()
+        try:
+            mail_service.send_reset_password_email(email, token)
+            return True
+        except Exception as e:
+            print(f"Error sending reset password email: {e}")
 
-    def reset_password(self, user_id: int, new_password: str, token: str):
+    def reset_password(self, new_password: str, token: str) -> User:
         user_email = self.password_service.verify_token(token)
 
         if not user_email:
@@ -44,6 +49,6 @@ class UserManager:
 
         hashed_password = self.password_service.hash_password(new_password)
 
-        self.user_repository.change_password(user, hashed_password)
+        response = self.user_repository.change_password(user, hashed_password)
 
-        return
+        return response
