@@ -1,100 +1,43 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Rebase</title>
+{% extends "base.html" %}
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/base.css') }}">
-  </head>
-  <body
-    class="flex items-center justify-center min-h-screen bg-[var(--bg-color)] transition-colors duration-300"
-  >
-    <div class="w-full max-w-md p-8 rounded-xl shadow-lg bg-[var(--card-bg)]">
-      <h1 class="text-3xl font-bold text-[var(--text-color)] mb-6">Log in</h1>
-      <form action="/authorize" method="post" class="space-y-4">
-        {% if error %}
-        <div class="mb-4 p-2 text-red-600 bg-red-100 rounded">{{ error }}</div>
-        {% endif %}
+{% block title %}Login - Rebase{% endblock %}
 
-        <div>
-          <label
-            for="username"
-            class="block text-sm font-medium text-[var(--text-color)]"
-            >Username or Email</label
-          >
-          <input
-            type="text"
-            name="username"
-            id="username"
-            class="mt-1 block w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] p-2 text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)]"
-            required
-          />
-        </div>
-        <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-[var(--text-color)]"
-            >Password</label
-          >
-          <input
-            type="password"
-            name="password"
-            id="password"
-            class="mt-1 block w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] p-2 text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)]"
-            required
-          />
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" name="remember" id="remember" class="mr-2" />
-          <label for="remember" class="text-sm text-[var(--text-color)]"
-            >Keep me logged in</label
-          >
-        </div>
+{% block content %}
+  <h1 class="page-title" style="margin-bottom: 0.75rem;">Log in</h1>
 
-        <!-- Campos ocultos necesarios para OAuth2 -->
-        <input type="hidden" name="client_id" value="{{ client_id }}" />
-        <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}" />
-        <input type="hidden" name="state" value="{{ state }}" />
-        <input type="hidden" name="scope" value="{{ scope }}" />
-        <input
-          type="hidden"
-          name="code_challenge"
-          value="{{ code_challenge }}"
-        />
-        <input
-          type="hidden"
-          name="code_challenge_method"
-          value="{{ code_challenge_method }}"
-        />
+  {% if error %}
+    <div class="message-error" role="alert">{{ error }}</div>
+  {% endif %}
 
-        <button
-          type="submit"
-          class="w-full py-2 rounded-md font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:opacity-90 transition-opacity"
-        >
-          Log in
-        </button>
-      </form>
-      <div class="mt-4 text-sm text-[var(--text-color)]">
-        <a href="#" class="text-[var(--button-bg)] hover:underline"
-          >Forgot password?</a
-        >
+  <form action="/authorize" method="post" novalidate>
+    <div class="form-row">
+      <label for="username">Username o Email</label>
+      <input id="username" name="username" type="text" class="input" required value="{{ username|default('') }}">
+    </div>
+
+    <div class="form-row">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" class="input" required>
+    </div>
+
+    <div class="form-row" style="display:flex;align-items:center;gap:.5rem;">
+      <input id="remember" name="remember" type="checkbox" />
+      <label for="remember" class="muted">Keep me logged in</label>
+      <div style="margin-left:auto">
+        <a href="/forgot-password" class="text-link">Forgot password?</a>
       </div>
     </div>
 
-    <script>
-      const htmlEl = document.documentElement;
-      const toggleDark = () => htmlEl.classList.toggle("dark");
-      const toggleLight = () => htmlEl.classList.toggle("light");
-      // Redirect to fotgot password page
-      document
-        .querySelector("a[href='#']")
-        .addEventListener("click", (e) => {
-          e.preventDefault();
-          window.location.href = "/forgot-password";
-        });
-    </script>
-  </body>
-</html>
+    <!-- Campos ocultos necesarios para OAuth2 (si aplica) -->
+    <input type="hidden" name="client_id" value="{{ client_id|default('') }}" />
+    <input type="hidden" name="redirect_uri" value="{{ redirect_uri|default('') }}" />
+    <input type="hidden" name="state" value="{{ state|default('') }}" />
+    <input type="hidden" name="scope" value="{{ scope|default('') }}" />
+    <input type="hidden" name="code_challenge" value="{{ code_challenge|default('') }}" />
+    <input type="hidden" name="code_challenge_method" value="{{ code_challenge_method|default('S256') }}" />
+
+    <div class="form-row">
+      <button type="submit" class="button">Log in</button>
+    </div>
+  </form>
+{% endblock %}

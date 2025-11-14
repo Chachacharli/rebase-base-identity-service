@@ -1,0 +1,44 @@
+:root {
+    /* Colors */
+    --color-bg: #f9fafb;
+    --color-bg-dark: #111827;
+
+    --color-card-bg: #ffffff;
+    --color-card-bg-dark: #1f2937;
+
+    --color-text: #1f2937;
+    --color-text-dark: #f9fafb;
+
+    --color-primary: #6d28d9; /* Purple */
+    --color-primary-hover: #5b21b6;
+
+    --color-border: #d1d5db;
+    --color-border-dark: #374151;
+
+    --color-input-bg: #ffffff;
+    --color-input-bg-dark: #111827;
+
+    --color-error: #dc2626;
+    --color-success: #16a34a;
+
+    /* Sizing */
+    --radius: 0.75rem;
+    --input-radius: 0.5rem;
+
+    /* Shadows */
+    --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+
+    /* Font */
+    --font-main: 'Vertana', sans-serif !important;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: var(--color-bg-dark);
+        --color-card-bg: var(--color-card-bg-dark);
+        --color-text: var(--color-text-dark);
+        --color-border: var(--color-border-dark);
+        --color-input-bg: var(--color-input-bg-dark);
+    }
+}
