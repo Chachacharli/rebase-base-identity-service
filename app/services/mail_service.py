@@ -2,8 +2,9 @@ import smtplib
 from email.message import EmailMessage
 from enum import Enum
 
-from app.core.config import MailSettings, mail_settings, settings
 from jinja2 import Environment, FileSystemLoader
+
+from app.core.config import MailSettings, mail_settings, settings
 
 
 class EmailType(Enum):
@@ -32,13 +33,13 @@ class MailService:
         )
 
     def send_email(self, to_email: str, subject: str, html_content: str):
-        """Método genérico para enviar correos HTML."""
+        """Generic method to send HTML emails."""
 
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = self.smtp_username
         msg["To"] = to_email
-        msg.set_content("Tu cliente de correo no soporta HTML.")
+        msg.set_content("Your email client does not support HTML.")
         msg.add_alternative(html_content, subtype="html")
 
         try:
