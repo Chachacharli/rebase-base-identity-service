@@ -1,71 +1,67 @@
-import smtplib
-from email.message import EmailMessage
-from enum import Enum
+"""Mail service layer providing high-level email operations.
 
-from jinja2 import Environment, FileSystemLoader
+This module acts as a thin wrapper around MailManager, providing a dependency
+injection point and simplifying integration throughout the application.
+"""
 
-from app.core.config import MailSettings, mail_settings, settings
-
-
-class EmailType(Enum):
-    RESET_PASSWORD = "reset_password"
-    VERIFICATION = "verification"
-
-
-class EmailUrls:
-    @staticmethod
-    def reset_password_url(token: str) -> str:
-        return f"{settings.BASE_URL}/reset-password?token={token}"
-
-    @staticmethod
-    def verification_url(token: str) -> str:
-        return f"{settings.BASE_URL}/verify-email?token={token}"
+from app.components.mail import MailManager, SMTPEmailProvider
+from app.core.config import mail_settings
 
 
 class MailService:
-    def __init__(self, mail_settings: MailSettings = mail_settings):
-        self.smtp_server = mail_settings.SMTP_SERVER
-        self.smtp_port = mail_settings.SMTP_PORT
-        self.smtp_username = mail_settings.SMTP_USERNAME
-        self.smtp_password = mail_settings.SMTP_PASSWORD
-        self.template_src = Environment(
-            loader=FileSystemLoader("app/templates/emails"), autoescape=True
-        )
+    """High-level mail service for sending emails across the application.
 
-    def send_email(self, to_email: str, subject: str, html_content: str):
-        """Generic method to send HTML emails."""
+    This service initializes MailManager with a default SMTP provider but can be
+    easily modified to support different providers or configurations.
 
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = self.smtp_username
-        msg["To"] = to_email
-        msg.set_content("Your email client does not support HTML.")
-        msg.add_alternative(html_content, subtype="html")
+    Usage:
+        mail_service = MailService()
+        mail_service.send_reset_password_email("user@example.com", "token123")
+    """
 
-        try:
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.ehlo()
-                server.starttls()
-                server.login(self.smtp_username, self.smtp_password)
-                server.send_message(msg)
-        except Exception as e:
-            print(f"Error al enviar correo: {e}")
-            raise
+    def __init__(self):
+        """Initialize mail service with default SMTP provider."""
+        self.provider = SMTPEmailProvider(mail_settings)
+        self.manager = MailManager(self.provider)
 
-    def send_reset_password_email(self, to_email: str, token: str):
-        link = EmailUrls.reset_password_url(token)
+    def send_reset_password_email(self, to_email: str, token: str) -> None:
+        self.manager.send_reset_password_email(to_email, token)
 
-        html = self.template_src.get_template("reset_password.html").render(link=link)
+    def send_verification_email(self, to_email: str, token: str) -> None:
+        self.manager.send_verification_email(to_email, token)
 
-        self.send_email(
-            to_email=to_email, subject="Restablecer contraseña", html_content=html
-        )
+    def send_custom_email(
+        self, to_email: str, subject: str, template_name: str, context: dict
+    ) -> None:
+        """Send a custom email using a template.
 
-    def send_verification_email(self, to_email: str, token: str):
-        link = EmailUrls.verification_url(token)
+        Args:
+            to_email: Recipient email address.
+            subject: Email subject line.
+            template_name: Name of the template file (e.g., "my_template.html").
+            context: Dictionary of variables to render in the template.
 
-        html = self.template_src.get_template("verify_email.html").render(link=link)
+        Raises:
+            Exception: If template not found or email sending fails.
+        """
+        self.manager.send_custom_email(to_email, subject, template_name, context)
 
-        self.send_email(
-            to_email=to_email, subject="Verificación de correo", html_content=html
-        )
+    def send_bulk_email(
+        self,
+        recipients: list[str],
+        subject: str,
+        template_name: str,
+        context: dict,
+    ) -> None:
+        """Send bulk email to multiple recipients.
+
+        Args:
+            recipients: List of recipient email addresses.
+            subject: Email subject line.
+            template_name: Name of the template file.
+            context: Dictionary of variables to render in the template.
+
+        Raises:
+            Exception: If template not found or email sending fails.
+        """
+        self.manager.send_bulk_email(recipients, subject, template_name, context)
