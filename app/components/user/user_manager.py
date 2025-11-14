@@ -31,17 +31,19 @@ class UserManager:
         pass
 
     def reset_password(self, user_id: int, new_password: str, token: str):
-        is_valid = self.password_service.verify_token(token)
+        user_email = self.password_service.verify_token(token)
 
-        if not is_valid:
+        if not user_email:
             raise ValueError("Invalid or expired token.")
 
-        user = self.user_repository.get_by_id(user_id)
+        user = self.user_repository.get_by_email(user_email)
         if not user:
             raise ValueError("User not found.")
 
+        self.user_component.validate_password(new_password)
+
         hashed_password = self.password_service.hash_password(new_password)
 
-        self.user_repository.change_password(user.id, hashed_password)
+        self.user_repository.change_password(user, hashed_password)
 
         return

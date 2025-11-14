@@ -5,7 +5,6 @@ from sqlmodel import Session
 
 from app.core.auth.dependencies import require_role
 from app.core.db import get_session
-from app.repositories.user_repository import UserRepository
 from app.schemas.user import (
     UserCreate,
     UserRead,
@@ -14,6 +13,7 @@ from app.schemas.user import (
     UserWithRoles,
 )
 from app.services.user_service import UserService
+from app.services.password_service import PasswordService
 
 router = APIRouter(prefix="/v1/user")
 
@@ -85,3 +85,12 @@ def remove_user_role(
     user_service = UserService(db)
     updated_user = user_service.remove_user_role(user_set_roles)
     return UserWithRoles.model_validate(updated_user)
+
+
+@router.get("test")
+def test_endpoint(db: Session = Depends(get_session)):
+    password_service = PasswordService("secret")
+    token = password_service.generate_token("test@example.com")
+    token_valid = password_service.verify_token(token)
+
+    return {"token": token, "token_valid": token_valid}

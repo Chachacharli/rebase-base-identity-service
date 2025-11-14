@@ -167,6 +167,7 @@ def reset_password_submit(
         )
 
     user_service = UserService(session)
+    # Es necesario obtener el usuario por email o por el token
     response = user_service.reset_password(new_password=password, token=token)
 
     return RedirectResponse("/login", status_code=303)
