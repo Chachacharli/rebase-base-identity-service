@@ -72,3 +72,17 @@ class RequiredPermissionException(AppException):
             http_status=status.HTTP_403_FORBIDDEN,
             details=details,
         )
+
+
+class UserEmailNotVerifiedException(AppException):
+    def __init__(
+        self,
+        message="User email not verified, please verify your email checking your inbox",
+        details=None,
+    ):
+        super().__init__(
+            message=message,
+            code=ExceptionCode.EMAIL_NOT_VERIFIED,
+            http_status=status.HTTP_400_BAD_REQUEST,
+            details=details,
+        )

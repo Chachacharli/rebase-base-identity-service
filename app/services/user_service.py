@@ -2,6 +2,7 @@ from passlib.hash import pbkdf2_sha256
 from sqlmodel import Session, select
 
 from app.components.user.user_manager import UserManager
+from app.exceptions.bussiness_exceptions import UserEmailNotVerifiedException
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserSetRole
@@ -31,6 +32,20 @@ class UserService:
         if user and pbkdf2_sha256.verify(password, user.password):
             return user
         return None
+
+    def authenticate_user_by_email_or_username(
+        self, email_or_username: str, password: str
+    ) -> User | None:
+        user = self.user_repo.get_by_email_or_username(email_or_username)
+
+        if not user:
+            return None
+
+        if user.email_verified is False:
+            raise UserEmailNotVerifiedException()
+
+        if user and pbkdf2_sha256.verify(password, user.password):
+            return user
 
     def reset_password(self, new_password: str, token: str) -> User:
         user_manager = UserManager(self.user_repo)

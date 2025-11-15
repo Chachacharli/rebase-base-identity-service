@@ -68,7 +68,23 @@ def authorize_post(
 ):
     # repo = UserRepository(session)
     service = UserService(session=session)
-    user = service.authenticate_user(username, password)
+    try:
+        user = service.authenticate_user_by_email_or_username(username, password)
+    except Exception as e:
+        error_msg = getattr(e, "message", str(e))
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "client_id": client_id,
+                "redirect_uri": redirect_uri,
+                "state": state,
+                "scope": scope,
+                "code_challenge": code_challenge,
+                "code_challenge_method": code_challenge_method,
+                "error": error_msg,
+            },
+        )
     app_settings_repository = AppSettingRepository(session)
 
     ttl_expiration_code = int(app_settings_repository.get("ttl_access_token"))
@@ -206,16 +222,24 @@ def resend_verification_page(request: Request):
 
 
 @router.post("/resend-verification")
-def resend_verification_submit(request: Request, email: str = Form(...), session: Session = Depends(get_session)):
+def resend_verification_submit(
+    request: Request, email: str = Form(...), session: Session = Depends(get_session)
+):
     user_service = UserService(session)
     success = user_service.resend_verification(email)
     if not success:
         return templates.TemplateResponse(
             "verify_resend.html",
-            {"request": request, "error": "Could not resend verification. Please check the email or try later."},
+            {
+                "request": request,
+                "error": "Could not resend verification. Please check the email or try later.",
+            },
         )
 
     return templates.TemplateResponse(
         "verify_resend.html",
-        {"request": request, "message": "A verification email has been sent if the account exists."},
+        {
+            "request": request,
+            "message": "A verification email has been sent if the account exists.",
+        },
     )

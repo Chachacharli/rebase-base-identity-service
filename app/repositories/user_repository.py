@@ -17,6 +17,12 @@ class UserRepository:
     def get_by_email(self, email: str):
         return self.session.exec(select(User).where(User.email == email)).first()
 
+    def get_by_email_or_username(self, email_or_username: str):
+        statement = select(User).where(
+            (User.email == email_or_username) | (User.username == email_or_username)
+        )
+        return self.session.exec(statement).first()
+
     def get_by_id(self, user_id: str) -> User | None:
         statement = (
             select(User).where(User.id == user_id).options(selectinload(User.roles))
