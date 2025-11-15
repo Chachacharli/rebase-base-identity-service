@@ -181,3 +181,41 @@ def reset_password_submit(
         )
 
     return RedirectResponse("/login", status_code=303)
+
+
+@router.get("/verify-email", response_class=HTMLResponse)
+def verify_email(request: Request, token: str, session: Session = Depends(get_session)):
+    """Verify token and activate the user's email, rendering the appropriate template."""
+    user_service = UserService(session)
+    success = user_service.verify_email(token)
+    if not success:
+        return templates.TemplateResponse(
+            "verify_resend.html",
+            {"request": request, "error": "Invalid or expired token."},
+        )
+
+    return templates.TemplateResponse(
+        "verify_result.html",
+        {"request": request, "message": "Email verified successfully."},
+    )
+
+
+@router.get("/resend-verification", response_class=HTMLResponse)
+def resend_verification_page(request: Request):
+    return templates.TemplateResponse("verify_resend.html", {"request": request})
+
+
+@router.post("/resend-verification")
+def resend_verification_submit(request: Request, email: str = Form(...), session: Session = Depends(get_session)):
+    user_service = UserService(session)
+    success = user_service.resend_verification(email)
+    if not success:
+        return templates.TemplateResponse(
+            "verify_resend.html",
+            {"request": request, "error": "Could not resend verification. Please check the email or try later."},
+        )
+
+    return templates.TemplateResponse(
+        "verify_resend.html",
+        {"request": request, "message": "A verification email has been sent if the account exists."},
+    )

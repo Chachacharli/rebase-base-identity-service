@@ -20,11 +20,27 @@ class UserManager:
 
         new_user = self.user_component.create_user(username, password, email)
         user = self.user_repository.create(new_user)
+        self.send_verification_email(email)
         return user
 
     def send_verification_email(self, email: str):
-        # Logic to send a verification email
-        pass
+        mail_service = MailService()
+        token = self.password_service.generate_token(email)
+        mail_service.send_verification_email(email, token)
+
+    def verify_email(self, token: str) -> bool:
+        """Verify an email using a token. Returns True if verification succeeded."""
+        user_email = self.password_service.verify_token(token)
+        if not user_email:
+            return False
+
+        user = self.user_repository.get_by_email(user_email)
+        if not user:
+            return False
+
+        # Update user as verified
+        updated_user = self.user_repository.set_email_verified(user)
+        return bool(updated_user)
 
     def send_mail_reset_password(self, email: str) -> bool:
         token = self.password_service.generate_token(email)

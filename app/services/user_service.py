@@ -1,5 +1,4 @@
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.components.user.user_manager import UserManager
@@ -37,6 +36,26 @@ class UserService:
         user_manager = UserManager(self.user_repo)
         response = user_manager.reset_password(new_password, token)
         return response
+
+    def verify_email(self, token: str) -> bool:
+        """Verifies an email using the provided token."""
+        user_manager = UserManager(self.user_repo)
+        return user_manager.verify_email(token)
+
+    def resend_verification(self, email: str) -> bool:
+        """Resend verification email to the given address if user exists and not verified."""
+        user = self.user_repo.get_by_email(email)
+        if not user:
+            return False
+        if user.email_verified:
+            return False
+
+        user_manager = UserManager(self.user_repo)
+        try:
+            user_manager.send_verification_email(email)
+            return True
+        except Exception:
+            return False
 
     def get_user_by_id(self, user_id: str) -> User | None:
         user = self.user_repo.get_by_id(user_id)

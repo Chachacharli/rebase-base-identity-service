@@ -76,3 +76,14 @@ class UserRepository:
         self.session.refresh(user)
 
         return user
+
+    def set_email_verified(self, user: User):
+        """Mark user's email as verified and persist the change."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.email_verified = True
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
