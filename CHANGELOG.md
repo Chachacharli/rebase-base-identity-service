@@ -2,7 +2,7 @@
 
 # 0.4.0 - 12/11/2025
 ## Summary 
-Implemented an endpoint to retrieve user information based on the user ID extracted from the access token. This endpoint provides essential user details such as user ID, username, email, full name (soon), and active status.
+This release introduces comprehensive user management and authentication enhancements, including a new user information endpoint, complete password reset and email verification flows, and improved security measures. The implementation adds robust email templating, service-layer components for secure token handling, and UI improvements for better user experience.
 
 ## Improvements
 - Added `/v1/userinfo` endpoint to fetch user information using the user ID from the access token.
@@ -16,6 +16,7 @@ Implemented an endpoint to retrieve user information based on the user ID extrac
 - Implemented endpoints and service wiring to support password reset flows and email sending.
 - Implemented endpoint to resend verification email: `/v1/auth/resend-verification-email`.
 - Updated user creation flow to send verification email upon registration.
+- Added account lockout mechanism after a configurable number of failed login attempts to enhance security.
 
 ### Corrections
 - Fixed password reset and token handling logic in `user_manager` and `password_service` to correct flow issues and ensure tokens are validated and consumed correctly.
