@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -16,6 +18,12 @@ class UserRepository:
 
     def get_by_email(self, email: str):
         return self.session.exec(select(User).where(User.email == email)).first()
+
+    def get_by_email_or_username(self, email_or_username: str):
+        statement = select(User).where(
+            (User.email == email_or_username) | (User.username == email_or_username)
+        )
+        return self.session.exec(statement).first()
 
     def get_by_id(self, user_id: str) -> User | None:
         statement = (
@@ -75,4 +83,38 @@ class UserRepository:
         self.session.commit()
         self.session.refresh(user)
 
+        return user
+
+    def set_email_verified(self, user: User):
+        """Mark user's email as verified and persist the change."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.email_verified = True
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
+    def increment_login_attempts(self, user: User, increment: int = 1):
+        """Increment the user's login_attempts counter and persist."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.login_attempts = (user.login_attempts or 0) + increment
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
+    def reset_login_attempts_and_set_last_login(self, user: User):
+        """Reset login_attempts to zero and update last_login timestamp."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.login_attempts = 0
+        user.last_login = datetime.utcnow()
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
         return user

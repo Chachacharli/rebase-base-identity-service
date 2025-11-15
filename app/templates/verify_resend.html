@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% block title %}Email Verification - Rebase{%
+endblock %} {% block content %}
+<h1 class="page-title">Email Verification</h1>
+
+{% if error %}
+<div class="message-error">{{ error }}</div>
+{% endif %} {% if message %}
+<div class="message-success">{{ message }}</div>
+{% else %}
+<p style="margin-bottom: 1rem;">
+  The verification link is invalid or expired. If your email is not verified
+  yet, you can request a new verification email.
+</p>
+
+<form method="post" action="/resend-verification">
+  <div class="form-row">
+    <label class="" for="email">Email</label>
+    <input class="input" type="email" id="email" name="email" required />
+  </div>
+
+  <button class="button" type="submit">Resend verification email</button>
+</form>
+{% endif %}
+
+<p><a class="text-link" href="/login">Back to login</a></p>
+{% endblock %}

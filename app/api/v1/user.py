@@ -12,8 +12,8 @@ from app.schemas.user import (
     UserUpdate,
     UserWithRoles,
 )
-from app.services.user_service import UserService
 from app.services.password_service import PasswordService
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/v1/user")
 
