@@ -89,21 +89,6 @@ def authorize_post(
 
     ttl_expiration_code = int(app_settings_repository.get("ttl_access_token"))
 
-    if not user:
-        return templates.TemplateResponse(
-            "login.html",
-            {
-                "request": request,
-                "client_id": client_id,
-                "redirect_uri": redirect_uri,
-                "state": state,
-                "scope": scope,
-                "code_challenge": code_challenge,
-                "code_challenge_method": code_challenge_method,
-                "error": "Usuario o contraseña incorrectos",
-            },
-        )
-
     # Generar authorization code (asociado al user_id)
     auth_code = str(uuid4())
     authorization_code_store.save(

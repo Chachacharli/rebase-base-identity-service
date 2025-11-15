@@ -3,6 +3,7 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.mail_service import MailService
 from app.services.password_service import PasswordService
+from app.core.config import settings
 
 
 class UserManager:
@@ -68,3 +69,26 @@ class UserManager:
         response = self.user_repository.change_password(user, hashed_password)
 
         return response
+
+    def validate_user_credentials(self, user: User, password: str) -> bool:
+        """Validate user's credentials, enforce login attempts lockout and update last_login.
+
+        - If the user is locked due to too many failed attempts, raise UserAccountLockedException.
+        - On successful authentication: reset attempts to 0 and set last_login to now.
+        - On failed authentication: increment attempts.
+        """
+        if user is None:
+            return False
+
+        # Delegate lock check to UserComponent using configured max attempts
+        self.user_component.ensure_login_allowed(user, settings.MAX_LOGIN_ATTEMPTS)
+
+        verified = self.password_service.verify_password(password, user.password)
+        if verified:
+            # successful login: reset attempts and update last_login
+            self.user_repository.reset_login_attempts_and_set_last_login(user)
+            return True
+        else:
+            # failed login: increment attempts
+            self.user_repository.increment_login_attempts(user)
+            return False

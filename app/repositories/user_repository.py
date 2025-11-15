@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -89,6 +91,29 @@ class UserRepository:
             raise NotFoundException(entity="User")
 
         user.email_verified = True
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
+    def increment_login_attempts(self, user: User, increment: int = 1):
+        """Increment the user's login_attempts counter and persist."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.login_attempts = (user.login_attempts or 0) + increment
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
+    def reset_login_attempts_and_set_last_login(self, user: User):
+        """Reset login_attempts to zero and update last_login timestamp."""
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.login_attempts = 0
+        user.last_login = datetime.utcnow()
         self.session.add(user)
         self.session.commit()
         self.session.refresh(user)

@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     PROJECT_VERSION: str = "0.1.0"
     BASE_URL: str = "http://localhost:8000"
 
+    # Login settings
+    MAX_LOGIN_ATTEMPTS: int = 5
+
     # JWT
     JWT_ALG: str = "RS256"
     PRIVATE_KEY_PATH: str = "keys/private.pem"

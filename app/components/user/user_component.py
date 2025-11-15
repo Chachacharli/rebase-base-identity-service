@@ -8,6 +8,8 @@ from app.models.user import User
 from app.policies.password_policies import PasswordPolicies
 from app.policies.username_policies import UserNamePolicies
 from app.repositories.user_repository import UserRepository
+from app.exceptions.bussiness_exceptions import UserAccountLockedException
+from app.models.user import User as UserModel
 
 
 class UserComponent:
@@ -55,3 +57,15 @@ class UserComponent:
 
     def passwords_match(self, password: str, confirm_password: str) -> bool:
         return password == confirm_password
+
+    def ensure_login_allowed(self, user: UserModel, max_attempts: int) -> None:
+        """Ensure the user is allowed to try to login.
+
+        Raises `UserAccountLockedException` if the user's `login_attempts`
+        is greater or equal to `max_attempts`.
+        """
+        if user is None:
+            return
+
+        if (user.login_attempts or 0) >= max_attempts:
+            raise UserAccountLockedException()
