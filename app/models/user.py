@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class User(SQLModel, PKMixin, TimestampMixin, AuditMixin, table=True):
     __tablename__ = "users"
     # Base fields
+    id: str
     username: str = Field(index=True, unique=True, nullable=False)
     password: str
     email: Optional[str] = Field(default=None, index=True, unique=True)

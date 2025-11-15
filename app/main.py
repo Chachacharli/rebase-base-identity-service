@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 import toml
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.api import api_router
@@ -48,6 +49,8 @@ app = FastAPI(
 register_exception_handlers(app)
 
 templates = Jinja2Templates(directory="app/templates")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,

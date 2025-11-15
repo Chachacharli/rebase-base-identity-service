@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" class="{{ theme|default('dark') }}">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Rebase{% endblock %}</title>
+
+    <!-- CSS semántico (variables + base + components) -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/components.css') }}">
+
+    <style>
+      /* Small helpers for centering inside card content */
+
+    </style>
+</head>
+<body>
+    <div class="container-center">
+        <div class="card">
+            {% block content %}{% endblock %}
+            <div style="margin-top: 1.25rem; text-align:center; font-size: 0.85rem; opacity: 0.75;">
+                © {{ year|default(2025) }} Rebase 
+            </div>
+        </div>
+    </div>
+
+    <script>
+      // Theme toggle (persist in localStorage)
+      (function () {
+        const preferred = localStorage.getItem('rebase_theme');
+        if (preferred === 'light') document.documentElement.classList.remove('dark');
+        function setTheme(theme) {
+          if (theme === 'light') {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('rebase_theme', 'light');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('rebase_theme', 'dark');
+          }
+        }
+        // expose global helpers for templates
+        window.rebaseTheme = { set: setTheme };
+      })();
+    </script>
+</body>
+</html>

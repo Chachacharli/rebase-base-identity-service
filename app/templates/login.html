@@ -1,127 +1,43 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Rebase</title>
+{% extends "base.html" %}
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      :root {
-        --color-royal-purple-50: #faf6fe;
-        --color-royal-purple-100: #f2ebfc;
-        --color-royal-purple-200: #e7dafa;
-        --color-royal-purple-300: #d5bdf5;
-        --color-royal-purple-400: #bc93ed;
-        --color-royal-purple-500: #a16ae2;
-        --color-royal-purple-600: #8b4ad3;
-        --color-royal-purple-700: #7638b8;
-        --color-royal-purple-800: #663399;
-        --color-royal-purple-900: #522a79;
-        --color-royal-purple-950: #371358;
-      }
+{% block title %}Login - Rebase{% endblock %}
 
-      .light {
-        --bg-color: var(--color-royal-purple-50);
-        --card-bg: white;
-        --text-color: #111827;
-        --input-bg: #f9fafb;
-        --input-border: #d1d5db;
-        --button-bg: var(--color-royal-purple-600);
-        --button-text: white;
-      }
+{% block content %}
+  <h1 class="page-title" style="margin-bottom: 0.75rem;">Log in</h1>
 
-      .dark {
-        --bg-color: #1f1f2e;
-        --card-bg: #27293d;
-        --text-color: #f9fafb;
-        --input-bg: #3b3b4f;
-        --input-border: #4b4b63;
-        --button-bg: var(--color-royal-purple-500);
-        --button-text: white;
-      }
-    </style>
-  </head>
-  <body
-    class="flex items-center justify-center min-h-screen bg-[var(--bg-color)] transition-colors duration-300"
-  >
-    <div class="w-full max-w-md p-8 rounded-xl shadow-lg bg-[var(--card-bg)]">
-      <h1 class="text-3xl font-bold text-[var(--text-color)] mb-6">Log in</h1>
-      <form action="/authorize" method="post" class="space-y-4">
-        {% if error %}
-        <div class="mb-4 p-2 text-red-600 bg-red-100 rounded">{{ error }}</div>
-        {% endif %}
+  {% if error %}
+    <div class="message-error" role="alert">{{ error }}</div>
+  {% endif %}
 
-        <div>
-          <label
-            for="username"
-            class="block text-sm font-medium text-[var(--text-color)]"
-            >Username or Email</label
-          >
-          <input
-            type="text"
-            name="username"
-            id="username"
-            class="mt-1 block w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] p-2 text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)]"
-            required
-          />
-        </div>
-        <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-[var(--text-color)]"
-            >Password</label
-          >
-          <input
-            type="password"
-            name="password"
-            id="password"
-            class="mt-1 block w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] p-2 text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)]"
-            required
-          />
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" name="remember" id="remember" class="mr-2" />
-          <label for="remember" class="text-sm text-[var(--text-color)]"
-            >Keep me logged in</label
-          >
-        </div>
+  <form class="form-content" action="/authorize" method="post" novalidate>
+    <div class="form-row">
+      <label for="username">Username o Email</label>
+      <input id="username" name="username" type="text" class="input" required value="{{ username|default('') }}">
+    </div>
 
-        <!-- Campos ocultos necesarios para OAuth2 -->
-        <input type="hidden" name="client_id" value="{{ client_id }}" />
-        <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}" />
-        <input type="hidden" name="state" value="{{ state }}" />
-        <input type="hidden" name="scope" value="{{ scope }}" />
-        <input
-          type="hidden"
-          name="code_challenge"
-          value="{{ code_challenge }}"
-        />
-        <input
-          type="hidden"
-          name="code_challenge_method"
-          value="{{ code_challenge_method }}"
-        />
+    <div class="form-row">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" class="input" required>
+    </div>
 
-        <button
-          type="submit"
-          class="w-full py-2 rounded-md font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:opacity-90 transition-opacity"
-        >
-          Log in
-        </button>
-      </form>
-      <div class="mt-4 text-sm text-[var(--text-color)]">
-        <a href="#" class="text-[var(--button-bg)] hover:underline"
-          >Forgot password?</a
-        >
+    <div class="form-row" style="display:flex;align-items:center;gap:.5rem;">
+      <input id="remember" name="remember" type="checkbox" />
+      <label for="remember" class="muted">Keep me logged in</label>
+      <div style="margin-left:auto">
+        <a href="/forgot-password" class="text-link">Forgot password?</a>
       </div>
     </div>
 
-    <script>
-      const htmlEl = document.documentElement;
-      const toggleDark = () => htmlEl.classList.toggle("dark");
-      const toggleLight = () => htmlEl.classList.toggle("light");
-    </script>
-  </body>
-</html>
+    <!-- Campos ocultos necesarios para OAuth2 (si aplica) -->
+    <input type="hidden" name="client_id" value="{{ client_id|default('') }}" />
+    <input type="hidden" name="redirect_uri" value="{{ redirect_uri|default('') }}" />
+    <input type="hidden" name="state" value="{{ state|default('') }}" />
+    <input type="hidden" name="scope" value="{{ scope|default('') }}" />
+    <input type="hidden" name="code_challenge" value="{{ code_challenge|default('') }}" />
+    <input type="hidden" name="code_challenge_method" value="{{ code_challenge_method|default('S256') }}" />
+
+    <div class="form-row">
+      <button type="submit" class="button">Log in</button>
+    </div>
+  </form>
+{% endblock %}

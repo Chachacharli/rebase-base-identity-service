@@ -1,3 +1,4 @@
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.exceptions.http_exceptions import NotFoundException
@@ -15,6 +16,13 @@ class UserRepository:
 
     def get_by_email(self, email: str):
         return self.session.exec(select(User).where(User.email == email)).first()
+
+    def get_by_id(self, user_id: str) -> User | None:
+        statement = (
+            select(User).where(User.id == user_id).options(selectinload(User.roles))
+        )
+        result = self.session.exec(statement).first()
+        return result
 
     def create(self, user: User):
         self.session.add(user)
@@ -56,4 +64,15 @@ class UserRepository:
         self.session.add(user)
         self.session.commit()
         self.session.refresh(user)
+        return user
+
+    def change_password(self, user: User, new_password: str):
+        if user is None:
+            raise NotFoundException(entity="User")
+
+        user.password = new_password
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+
         return user

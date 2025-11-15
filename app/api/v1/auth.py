@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
 
@@ -103,3 +103,81 @@ def authorize_post(
     # Redirigir con code + state
     redirect_url = f"{redirect_uri}?code={auth_code}&state={state}"
     return RedirectResponse(redirect_url, status_code=302)
+
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse("forgot_password.html", {"request": request})
+
+
+@router.post("/forgot-password")
+def process_forgot_password(
+    request: Request,
+    email: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    user_service = UserService(session)
+    user = user_service.user_repo.get_by_email(email)
+    if not user:
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "error": "The email does not exist. Please check and try again.",
+            },
+        )
+
+    # Aquí se generaría y enviaría el enlace de restablecimiento de contraseña
+
+    response = user_service.send_mail_reset_password(email)
+
+    if not response:
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "error": "There was an error sending the reset email. Please try again later.",
+            },
+        )
+    else:
+        # Por simplicidad, solo mostramos un mensaje
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "message": "A reset link has been sent.",
+            },
+        )
+
+
+@router.get("/reset-password", response_class=HTMLResponse)
+def reset_password_page(request: Request, token: str):
+    email = True
+    if not email:
+        return templates.TemplateResponse(
+            "reset_password.html",
+            {"request": request, "error": "Invalid or expired token."},
+        )
+    return templates.TemplateResponse(
+        "reset_password.html", {"request": request, "token": token}
+    )
+
+
+@router.post("/reset-password")
+def reset_password_submit(
+    request: Request,
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    user_service = UserService(session)
+    response = user_service.reset_password(new_password=password, token=token)
+
+    if not response:
+        return templates.TemplateResponse(
+            "reset_password.html",
+            {"request": request, "error": "Invalid or expired token."},
+        )
+
+    return RedirectResponse("/login", status_code=303)

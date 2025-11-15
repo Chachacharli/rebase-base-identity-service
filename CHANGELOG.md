@@ -1,5 +1,28 @@
 # rebase-base-identity-service
 
+# 0.4.0 - 12/11/2025
+## Summary 
+Implemented an endpoint to retrieve user information based on the user ID extracted from the access token. This endpoint provides essential user details such as user ID, username, email, full name (soon), and active status.
+
+## Improvements
+- Added `/v1/userinfo` endpoint to fetch user information using the user ID from the access token.
+- Created `UserInfoSchema` to structure the user information response.
+- Added email templates for password reset and verification flows (`app/templates/emails/reset_password.html`, `app/templates/emails/verify_email.html`, and `app/templates/emails/email_base.html`).
+- Implemented password reset and verification HTML templates for the web flow (`app/templates/forgot_password.html`, `app/templates/reset_password.html`).
+- Added mail components and a `MailService`/`MailManager` to send password reset and verification emails (`app/components/mail/*`, `app/services/mail_service.py`).
+- Implemented `PasswordService` for token generation and secure password hashing (`app/services/password_service.py`).
+- Added CSS theming and layout files to improve UI styling (`app/static/css/variables.css`, `app/static/css/components.css`, `app/static/css/main.css`) and updated base templates for consistent layout.
+- Improved form and email template structure and styling for better UX.
+- Implemented endpoints and service wiring to support password reset flows and email sending.
+
+### Corrections
+- Fixed password reset and token handling logic in `user_manager` and `password_service` to correct flow issues and ensure tokens are validated and consumed correctly.
+- Fixed issues in the revoke endpoint and related routing/handlers.
+- Minor fixes for template rendering and endpoint wiring related to email flows and static assets.
+
+### Decrements
+
+
 ## 0.3.0 - 05/11/2025
 
 ### Summary

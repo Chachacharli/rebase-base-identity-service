@@ -1,0 +1,16 @@
+{% extends "email_base.html" %}
+
+{% block content %}
+    <div class="title">Password Recovery</div>
+
+    <p>Hello,</p>
+
+    <p>We received a request to verify your email address.</p>
+
+    <p>Click the button below to continue:</p>
+
+    <p style="text-align: center;">
+        <a href="{{ link }}" class="button">Verify email</a>
+    </p>
+
+{% endblock %}

@@ -18,6 +18,11 @@ class RefreshTokenRepository:
             select(RefreshToken).where(RefreshToken.token == token_str)
         ).first()
 
+    def get_by_id(self, token_id: int) -> RefreshToken | None:
+        return self.session.exec(
+            select(RefreshToken).where(RefreshToken.id == token_id)
+        ).first()
+
     def revoke(self, token_str: str) -> RefreshToken:
         token = self.get(token_str)
         if token:

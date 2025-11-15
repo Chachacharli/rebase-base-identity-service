@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Form
 from sqlmodel import Session
 
 from app.core.db import get_session
-from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.services.token_service import TokenService
 
 router = APIRouter(prefix="/v1/revoke")
 
@@ -16,8 +16,6 @@ def revoke(
     token_type_hint: str = Form(None),
     session: Session = Depends(get_session),
 ):
-    repo = RefreshTokenRepository(session)
-    db_token = repo.get(token)
-    if db_token:
-        repo.revoke(token)
+    service = TokenService(session)
+    service.revoke_token(token)
     return {"revoked": True}

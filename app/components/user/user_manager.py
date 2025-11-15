@@ -1,12 +1,15 @@
 from app.components.user.user_component import UserComponent
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.services.mail_service import MailService
+from app.services.password_service import PasswordService
 
 
 class UserManager:
     def __init__(self, repository: UserRepository):
         self.user_component = UserComponent()
         self.user_repository = repository
+        self.password_service = PasswordService("secret")
 
     def get_user(self, user_id: int):
         # Logic to retrieve a user by ID
@@ -19,6 +22,33 @@ class UserManager:
         user = self.user_repository.create(new_user)
         return user
 
-    def reset_password(self, user_id: int, new_password: str):
-        # Logic to reset a user's password
+    def send_verification_email(self, email: str):
+        # Logic to send a verification email
         pass
+
+    def send_mail_reset_password(self, email: str) -> bool:
+        token = self.password_service.generate_token(email)
+        mail_service = MailService()
+        try:
+            mail_service.send_reset_password_email(email, token)
+            return True
+        except Exception as e:
+            print(f"Error sending reset password email: {e}")
+
+    def reset_password(self, new_password: str, token: str) -> User:
+        user_email = self.password_service.verify_token(token)
+
+        if not user_email:
+            raise ValueError("Invalid or expired token.")
+
+        user = self.user_repository.get_by_email(user_email)
+        if not user:
+            raise ValueError("User not found.")
+
+        self.user_component.validate_password(new_password)
+
+        hashed_password = self.password_service.hash_password(new_password)
+
+        response = self.user_repository.change_password(user, hashed_password)
+
+        return response
