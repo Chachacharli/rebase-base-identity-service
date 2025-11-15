@@ -1,9 +1,9 @@
 from app.components.user.user_component import UserComponent
+from app.core.config import settings
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.mail_service import MailService
 from app.services.password_service import PasswordService
-from app.core.config import settings
 
 
 class UserManager:
